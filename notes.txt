@@ -1,0 +1,10 @@
+Git Lab Notes - Exercise 1
+
+Key Concepts:
+- Git is a distributed version control system
+- Every clone has the full history of the project
+- Commits create snapshots of the project at specific points in time
+
+Initial Thoughts:
+Learning Git helps me collaborate with other developers and track changes in my code over time.
+Version control is essential for modern software development.
