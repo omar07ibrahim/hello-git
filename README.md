@@ -2,6 +2,8 @@
 
 This is my first Git repository for AI1030 Python Programming course.
 
+**Updated from GitHub web interface!**
+
 ## Purpose
 Learning Git basics including:
 - Version control fundamentals
