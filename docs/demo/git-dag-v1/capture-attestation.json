@@ -1,0 +1,60 @@
+{
+  "attestation": {
+    "browser": {
+      "binary_path": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
+      "sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
+      "version": "Chromium 140.0.7339.186"
+    },
+    "container": {
+      "architecture": "amd64",
+      "image": "mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c"
+    },
+    "input": {
+      "report": {
+        "path": "docs/demo/git-dag-v1/report.html",
+        "report_receipt_sha256": "2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84",
+        "sha256": "2de152025dbc9ee67026c03af57cddf5841c4d55bf4b2d2315beeb1ab1d09f7c",
+        "size": 9448
+      }
+    },
+    "isolation": {
+      "capabilities": "all-dropped",
+      "demo_mount": "read-only",
+      "network": "none",
+      "no_new_privileges": true,
+      "pull": "never",
+      "root_filesystem": "read-only",
+      "user": "caller-nonroot"
+    },
+    "outputs": {
+      "rendered_dom": {
+        "path": "docs/demo/git-dag-v1/rendered-dom.html",
+        "sha256": "4ae85825748f37c6275368db835ab157565f8c561757dc496081fc23fe399b3b",
+        "size": 9484
+      },
+      "screenshot": {
+        "height": 1800,
+        "path": "docs/assets/git-dag-report.png",
+        "sha256": "e539db1152e8b1d66ee543d045739851991deb2e1a45174eb4358621efd4e17e",
+        "size": 779439,
+        "width": 1440
+      }
+    },
+    "schema_version": "git-dag-browser-capture-attestation/v1",
+    "script": {
+      "path": "tools/capture_report.sh",
+      "sha256": "74dcf776035069299067544d3bd7b8a1443724f1bd7b842876ea53831b0d8441",
+      "size": 10937
+    },
+    "viewport": {
+      "device_scale_factor": 1,
+      "height": 1800,
+      "width": 1440
+    }
+  },
+  "receipt": {
+    "algorithm": "sha256",
+    "canonicalization": "UTF-8 JSON; sorted keys; compact separators",
+    "sha256": "7c9b58040ada09b40dc57e21c36767d044ec08e8e6a1c928e7dd5da0941ff238"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "artifacts": [
+    {
+      "path": "docs/assets/evidence-pipeline.svg",
+      "role": "evidence pipeline derived from execution summary",
+      "sha256": "55504a79c5025689c167020db503ddaf64adb1542776254d5dedb2fa11f8b157",
+      "size": 4600
+    },
+    {
+      "path": "docs/assets/git-dag-cli.svg",
+      "role": "visualized exact CLI transcript",
+      "sha256": "c67588c50f60792371a6e7ba65e61a68e0cbdeef4981e1448cf055a886bc0621",
+      "size": 2683
+    },
+    {
+      "path": "docs/assets/git-dag-report.png",
+      "role": "attested offline report browser capture",
+      "sha256": "e539db1152e8b1d66ee543d045739851991deb2e1a45174eb4358621efd4e17e",
+      "size": 779439
+    },
+    {
+      "path": "docs/assets/git-dag-topology.svg",
+      "role": "Git DAG topology derived from evidence",
+      "sha256": "9e5532d35b5782e10910071330cbf4dd89ec3348b0941d084befcc0db0281352",
+      "size": 5919
+    },
+    {
+      "path": "docs/assets/git-object-envelope.svg",
+      "role": "raw object envelope proof derived from evidence",
+      "sha256": "c6e0d71e79212dc96fdec0a05424f05bf942b1a27b17b894873d1f415db6a63f",
+      "size": 3496
+    },
+    {
+      "path": "docs/demo/git-dag-v1/capture-attestation.json",
+      "role": "capture provenance binding browser, isolation, input, and outputs",
+      "sha256": "ea18a02969796afd0900dc5883ab29490bb517bf0f8d74f7f5f6043cb36a7f08",
+      "size": 1990
+    },
+    {
+      "path": "docs/demo/git-dag-v1/inspect.json",
+      "role": "exact pretty inspection stdout",
+      "sha256": "ba959501548222ac9ee76b40148b8e743bfdee06482d31d2ad3b30c9edeb06e9",
+      "size": 11176
+    },
+    {
+      "path": "docs/demo/git-dag-v1/rendered-dom.html",
+      "role": "actual DOM emitted during the browser capture",
+      "sha256": "4ae85825748f37c6275368db835ab157565f8c561757dc496081fc23fe399b3b",
+      "size": 9484
+    },
+    {
+      "path": "docs/demo/git-dag-v1/report.html",
+      "role": "dependency-free offline report",
+      "sha256": "2de152025dbc9ee67026c03af57cddf5841c4d55bf4b2d2315beeb1ab1d09f7c",
+      "size": 9448
+    },
+    {
+      "path": "docs/demo/git-dag-v1/verify.txt",
+      "role": "exact verify stdout",
+      "sha256": "1a0a54f75c0678861cee98883ffba319216f568c695d81e1e3dc3de8db5ce05b",
+      "size": 159
+    },
+    {
+      "path": "evidence/git-dag-v1.json",
+      "role": "canonical compact CLI evidence",
+      "sha256": "6963f86bb0cf3749906c0fb5650a4bb672c0f01765dc1ae3b0f0affa5a7e7f1c",
+      "size": 7264
+    }
+  ],
+  "capture": {
+    "attestation": "docs/demo/git-dag-v1/capture-attestation.json",
+    "attestation_receipt_sha256": "7c9b58040ada09b40dc57e21c36767d044ec08e8e6a1c928e7dd5da0941ff238",
+    "browser_binary": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
+    "browser_sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
+    "browser_version": "Chromium 140.0.7339.186",
+    "container_image": "mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c",
+    "network": "none",
+    "rendered_dom_sha256": "4ae85825748f37c6275368db835ab157565f8c561757dc496081fc23fe399b3b",
+    "screenshot_sha256": "e539db1152e8b1d66ee543d045739851991deb2e1a45174eb4358621efd4e17e",
+    "status": "attested",
+    "viewport": {
+      "height": 1800,
+      "width": 1440
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "git_dag_lab",
+        "verify"
+      ],
+      "exit_code": 0,
+      "fresh_runs": 2,
+      "stderr_bytes": 0,
+      "stdout": "docs/demo/git-dag-v1/verify.txt"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "git_dag_lab",
+        "inspect",
+        "--compact"
+      ],
+      "exit_code": 0,
+      "fresh_runs": 2,
+      "stderr_bytes": 0,
+      "stdout": "evidence/git-dag-v1.json"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "git_dag_lab",
+        "inspect"
+      ],
+      "exit_code": 0,
+      "fresh_runs": 2,
+      "stderr_bytes": 0,
+      "stdout": "docs/demo/git-dag-v1/inspect.json"
+    }
+  ],
+  "report_receipt_sha256": "2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84",
+  "schema_version": "git-dag-evidence-manifest/v1",
+  "sources": [
+    {
+      "path": "git_dag_lab/lab.py",
+      "sha256": "8c4bf11d5c7840a7dcbe3f4486246aff9b3a306c6bceb7b15be3fd0040a7bbd4",
+      "size": 34652
+    },
+    {
+      "path": "git_dag_lab/cli.py",
+      "sha256": "4b8b2433e0b613a303b886d08a630ddfeada557702fc47de4cd2f59824e6501d",
+      "size": 1684
+    },
+    {
+      "path": "tools/generate_evidence.py",
+      "sha256": "442346818e239a4ab9b4fa9804929e61bf266dc7145a543fb40076298d47ce6b",
+      "size": 49590
+    },
+    {
+      "path": "tools/capture_report.sh",
+      "sha256": "74dcf776035069299067544d3bd7b8a1443724f1bd7b842876ea53831b0d8441",
+      "size": 10937
+    }
+  ]
+}

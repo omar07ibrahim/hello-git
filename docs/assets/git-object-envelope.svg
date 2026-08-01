@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="900" viewBox="0 0 1300 900" role="img" aria-labelledby="title desc" data-report-receipt="2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84">
+  <title id="title">Independent Git object envelope verification</title>
+  <desc id="desc">The actual merge commit payload, its byte-counted Git header, and independently recomputed SHA-1 object ID.</desc>
+  <metadata>{"report_receipt_sha256":"2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84","source":"evidence/git-dag-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1300" height="900" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="58" y="58">ACTUAL COMMIT BYTES · INDEPENDENT ENVELOPE CHECK</text>
+  <text class="heading" x="58" y="102">Git hashes the envelope, not the payload alone.</text>
+  <rect x="58" y="145" width="1184" height="490" rx="18" fill="#0b1528" stroke="#30476f"/>
+  <text class="eyebrow" x="88" y="186">HEADER · commit 302\0</text>
+  <line x1="88" y1="206" x2="1210" y2="206" stroke="#263a5d"/>
+  <text class="mono" x="88" y="242">tree bd1cb456eb487ecb6414ae2d06a512a42929c078</text>
+  <text class="mono" x="88" y="281">parent c21dbed8c2bc1e2dcc76a0b96a50f701e9152eb8</text>
+  <text class="mono" x="88" y="320">parent e5bb18813e4c1f6398cc041217640446b073740f</text>
+  <text class="mono" x="88" y="359">author Git DAG Lab &lt;dag-lab@example.invalid&gt; 1704326400 +0000</text>
+  <text class="mono" x="88" y="398">committer Git DAG Lab &lt;dag-lab@example.invalid&gt; 1704326400 +0000</text>
+  <text class="mono" x="88" y="437">⟨blank line⟩</text>
+  <text class="mono" x="88" y="476">merge: combine feature and docs</text>
+  <path d="M 650 650 L 650 704" stroke="#59e3c2" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="170" y="718" width="960" height="116" rx="18" fill="#102b2c" stroke="#2fd6af" stroke-width="2"/>
+  <text class="eyebrow" text-anchor="middle" x="650" y="755">SHA-1(TYPE + SPACE + SIZE + NUL + PAYLOAD)</text>
+  <text class="mono" text-anchor="middle" x="650" y="792">67552934406abb8394bf32112ebd064efc1bd922</text>
+  <text class="small" text-anchor="middle" x="650" y="820">payload 302 bytes · payload SHA-256 5c6e38b8dd9e27125026… · verified true</text>
+  <text class="small" x="58" y="872">Report receipt SHA-256 · 2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84</text>
+</svg>

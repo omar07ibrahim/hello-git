@@ -207,10 +207,21 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(receipts, [self.report.receipt_sha256] * 2)
 
     def test_temporary_workspaces_are_removed(self) -> None:
-        before = set(REPOSITORY_ROOT.glob(".git-dag-lab-*"))
-        run_lab(REPOSITORY_ROOT)
-        after = set(REPOSITORY_ROOT.glob(".git-dag-lab-*"))
-        self.assertEqual(after, before)
+        real_temporary_directory = tempfile.TemporaryDirectory
+        created: list[Path] = []
+
+        def tracked_temporary_directory(*args: object, **kwargs: object):
+            directory = real_temporary_directory(*args, **kwargs)
+            created.append(Path(directory.name))
+            return directory
+
+        with mock.patch(
+            "git_dag_lab.lab.tempfile.TemporaryDirectory",
+            side_effect=tracked_temporary_directory,
+        ):
+            run_lab(REPOSITORY_ROOT)
+        self.assertEqual(len(created), 1)
+        self.assertFalse(created[0].exists())
 
     def test_environment_and_working_directory_are_unchanged(self) -> None:
         before_env = dict(os.environ)

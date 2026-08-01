@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc" data-report-receipt="2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84">
+  <title id="title">Actual Git commit topology</title>
+  <desc id="desc">Five verified commits. Arrows point from each commit to the parent object IDs stored in its raw bytes.</desc>
+  <metadata>{"report_receipt_sha256":"2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84","source":"evidence/git-dag-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1200" height="760" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="56" y="58">REAL GIT OBJECT GRAPH · SHA-1 OIDS FROM EVIDENCE</text>
+  <text class="heading" x="56" y="101">Same tree. Different history.</text>
+  <text class="body" x="56" y="132">Arrows point backward to ordered parents, matching the commit payload—not a presentation-only flow.</text>
+  <path class="edge" d="M 315 205 C 255 205, 295 350, 235 350"/>
+  <path class="edge" d="M 315 495 C 255 495, 295 350, 235 350"/>
+  <path class="edge" d="M 645 205 C 585 205, 555 205, 495 205"/>
+  <path class="edge" d="M 645 205 C 585 205, 555 495, 495 495"/>
+  <path class="edge" d="M 645 495 C 585 495, 555 495, 495 495"/>
+  <g><title>root commit 4814d0612b41cc2a3df58ace8199a74f341223b5; tree 84b5355fdc08ec6872c0a1ddc5a30e5424b5cbf3; ordered parents none</title>
+    <rect class="node" filter="url(#shadow)" x="55" y="289" width="180" height="122" rx="16"/>
+    <text class="heading" style="font-size:21px" text-anchor="middle" x="145" y="330">root</text>
+    <text class="mono" text-anchor="middle" x="145" y="359">4814d0612b41</text>
+    <text class="small" text-anchor="middle" x="145" y="388">0 parents</text>
+  </g>
+  <g><title>feature commit c21dbed8c2bc1e2dcc76a0b96a50f701e9152eb8; tree 9205e08628e9a4160bf9a42b412a88f253ac5736; ordered parents 4814d0612b41cc2a3df58ace8199a74f341223b5</title>
+    <rect class="node" filter="url(#shadow)" x="315" y="144" width="180" height="122" rx="16"/>
+    <text class="heading" style="font-size:21px" text-anchor="middle" x="405" y="185">feature</text>
+    <text class="mono" text-anchor="middle" x="405" y="214">c21dbed8c2bc</text>
+    <text class="small" text-anchor="middle" x="405" y="243">1 parent</text>
+  </g>
+  <g><title>docs commit e5bb18813e4c1f6398cc041217640446b073740f; tree 58c0d795fd7374b10b1680273ed788414a552166; ordered parents 4814d0612b41cc2a3df58ace8199a74f341223b5</title>
+    <rect class="node" filter="url(#shadow)" x="315" y="434" width="180" height="122" rx="16"/>
+    <text class="heading" style="font-size:21px" text-anchor="middle" x="405" y="475">docs</text>
+    <text class="mono" text-anchor="middle" x="405" y="504">e5bb18813e4c</text>
+    <text class="small" text-anchor="middle" x="405" y="533">1 parent</text>
+  </g>
+  <g><title>merge commit 67552934406abb8394bf32112ebd064efc1bd922; tree bd1cb456eb487ecb6414ae2d06a512a42929c078; ordered parents c21dbed8c2bc1e2dcc76a0b96a50f701e9152eb8, e5bb18813e4c1f6398cc041217640446b073740f</title>
+    <rect class="node" filter="url(#shadow)" x="645" y="144" width="180" height="122" rx="16"/>
+    <text class="heading" style="font-size:21px" text-anchor="middle" x="735" y="185">merge</text>
+    <text class="mono" text-anchor="middle" x="735" y="214">67552934406a</text>
+    <text class="small" text-anchor="middle" x="735" y="243">2 parents</text>
+  </g>
+  <g><title>replay commit 13675cb5408bd31ec3325014ee32990ff42fb486; tree bd1cb456eb487ecb6414ae2d06a512a42929c078; ordered parents e5bb18813e4c1f6398cc041217640446b073740f</title>
+    <rect class="node" filter="url(#shadow)" x="645" y="434" width="180" height="122" rx="16"/>
+    <text class="heading" style="font-size:21px" text-anchor="middle" x="735" y="475">replay</text>
+    <text class="mono" text-anchor="middle" x="735" y="504">13675cb5408b</text>
+    <text class="small" text-anchor="middle" x="735" y="533">1 parent</text>
+  </g>
+  <rect x="948" y="242" width="205" height="216" rx="18" fill="#102b2c" stroke="#2fd6af" stroke-width="2"/>
+  <text class="eyebrow" x="972" y="278">PROVEN INVARIANT</text>
+  <text class="heading" style="font-size:22px" x="972" y="318">Same tree</text>
+  <text class="mono" x="972" y="349">bd1cb456eb487ecb</text>
+  <text class="body" x="972" y="386">merge: 2 parents</text>
+  <text class="body" x="972" y="414">replay: 1 parent</text>
+  <text class="small" x="972" y="442">Distinct commit OIDs</text>
+  <line x1="56" y1="665" x2="1144" y2="665" stroke="#263a5d"/>
+  <text class="small" x="56" y="700">Ref tips: main → merge · feature → feature · docs → docs · results/rebased-feature → replay</text>
+  <text class="small" x="56" y="726">Report receipt SHA-256 · 2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84</text>
+</svg>

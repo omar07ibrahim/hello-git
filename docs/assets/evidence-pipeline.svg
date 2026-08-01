@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="520" viewBox="0 0 1400 520" role="img" aria-labelledby="title desc" data-report-receipt="2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84">
+  <title id="title">Reproducible evidence pipeline</title>
+  <desc id="desc">The actual path from fixed fixture bytes through isolated Git plumbing and independent checks into the checked-in evidence artifacts.</desc>
+  <metadata>{"capture_attestation":"docs/demo/git-dag-v1/capture-attestation.json","capture_attestation_receipt_sha256":"7c9b58040ada09b40dc57e21c36767d044ec08e8e6a1c928e7dd5da0941ff238","capture_status":"attested","container_image":"mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c","network":"none","report_receipt_sha256":"2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84","screenshot_sha256":"e539db1152e8b1d66ee543d045739851991deb2e1a45174eb4358621efd4e17e","source":"evidence/git-dag-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1400" height="520" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="58" y="58">REPRODUCIBLE EVIDENCE PIPELINE · NO NETWORK</text>
+  <text class="heading" x="58" y="102">Every visual starts from the same verified report receipt.</text>
+  <rect class="node" filter="url(#shadow)" x="40" y="178" width="220" height="172" rx="18"/>
+  <text class="eyebrow" x="64" y="214">01</text>
+  <text class="heading" style="font-size:20px" x="64" y="258">Fixed scenario</text>
+  <text class="body" style="font-size:14px" x="64" y="296">3 blobs · 6 trees · 5 commits</text>
+  <path class="edge" d="M 269 264 L 305 264"/>
+  <rect class="node" filter="url(#shadow)" x="315" y="178" width="220" height="172" rx="18"/>
+  <text class="eyebrow" x="339" y="214">02</text>
+  <text class="heading" style="font-size:20px" x="339" y="258">Git plumbing</text>
+  <text class="body" style="font-size:14px" x="339" y="296">57 isolated invocations</text>
+  <path class="edge" d="M 544 264 L 580 264"/>
+  <rect class="node" filter="url(#shadow)" x="590" y="178" width="220" height="172" rx="18"/>
+  <text class="eyebrow" x="614" y="214">03</text>
+  <text class="heading" style="font-size:20px" x="614" y="258">Bare object DB</text>
+  <text class="body" style="font-size:14px" x="614" y="296">private HOME · config ignored</text>
+  <path class="edge" d="M 819 264 L 855 264"/>
+  <rect class="node" filter="url(#shadow)" x="865" y="178" width="220" height="172" rx="18"/>
+  <text class="eyebrow" x="889" y="214">04</text>
+  <text class="heading" style="font-size:20px" x="889" y="258">Independent verifier</text>
+  <text class="body" style="font-size:14px" x="889" y="296">14 envelopes · refs · DAG</text>
+  <path class="edge" d="M 1094 264 L 1130 264"/>
+  <rect class="node" filter="url(#shadow)" x="1140" y="178" width="220" height="172" rx="18"/>
+  <text class="eyebrow" x="1164" y="214">05</text>
+  <text class="heading" style="font-size:20px" x="1164" y="258">Canonical evidence</text>
+  <text class="body" style="font-size:14px" x="1164" y="296">JSON · SVG · HTML · PNG</text>
+  <rect x="40" y="390" width="1320" height="70" rx="16" fill="#102b2c" stroke="#2fd6af"/>
+  <text class="body" x="68" y="424">Gate: two fresh CLI runs byte-match · 9/9 checks pass · attested PNG e539db1152e8… · pinned Chromium · network=none</text>
+  <text class="small" x="68" y="449">Report receipt SHA-256 · 2da1ccd8799699ade939f3901566e448baeb9691973624452231b35594469c84</text>
+</svg>
