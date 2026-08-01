@@ -1,0 +1,22 @@
+# Security model
+
+Git DAG Evidence Lab creates a temporary bare repository below the selected workspace and removes it after each run. It does not inspect the repository that contains this source code.
+
+The command boundary is deliberately narrow:
+
+- Git is executed by absolute path with argument arrays, never through a shell.
+- the executable selected by the caller's `PATH` is treated as trusted, then resolved once to an absolute path.
+- Only local plumbing and inspection subcommands are allow-listed; no transport command is available.
+- `HOME`, `XDG_CONFIG_HOME`, and `TMPDIR` point to private temporary directories.
+- inherited Git configuration, object-directory redirects, identity, hooks, prompts, and replacement objects are ignored.
+- fixed synthetic identity and timestamps make commit objects reproducible without exposing a host identity.
+- temporary roots with symlinked path components are rejected.
+- stdout and stderr are captured in private temporary files and rejected before loading into memory when either exceeds 1 MiB.
+
+## SHA-1 scope
+
+The lab uses SHA-1 because the scenario explicitly models a SHA-1 Git object database. The independent envelope calculation demonstrates deterministic content addressing and detects accidental changes in these fixtures. It is not a signature, authentication mechanism, or claim of modern collision resistance.
+
+## Reporting an issue
+
+Please open a GitHub issue with a minimal reproduction. Do not include credentials, private repository contents, environment dumps, or personal data.

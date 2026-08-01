@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.coverage
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.git-dag-lab-*/
+build/
+dist/
+*.egg-info/
