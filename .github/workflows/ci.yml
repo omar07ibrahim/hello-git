@@ -72,7 +72,7 @@ jobs:
           env -u PYTHONHOME -u PYTHONPATH python -W error -m unittest discover -s tests -v
           env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_evidence.py --check
           bash -n tools/capture_report.sh
-          test "$(shellcheck --version | awk '$1 == "version:" {print $2}')" = "0.10.0"
+          test "$(shellcheck --version | awk '$1 == "version:" {print $2}')" = "0.9.0"
           shellcheck tools/capture_report.sh
           test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
 
