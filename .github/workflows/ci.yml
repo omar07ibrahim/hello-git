@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONNOUSERSITE: "1"
+  PYTHONHASHSEED: "0"
+  TZ: UTC
+
+jobs:
+  quality:
+    name: Offline lab, tests, and evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the immutable event revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up exact Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.12"
+
+      - name: Assert event, runtime, and clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "omar07ibrahim/hello-git"
+          if test "$GITHUB_EVENT_NAME" = "push"; then
+            test "$GITHUB_REF" = "refs/heads/main"
+          else
+            test "$GITHUB_EVENT_NAME" = "pull_request"
+            [[ "$GITHUB_REF" =~ ^refs/pull/[1-9][0-9]*/merge$ ]]
+          fi
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse --show-toplevel)" = "$GITHUB_WORKSPACE"
+          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.12"
+          test -z "${OPENAI_API_KEY:-}"
+          test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
+
+      - name: Verify real CLI receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          env -u PYTHONHOME -u PYTHONPATH python -B -m git_dag_lab verify > "$RUNNER_TEMP/verify.txt"
+          cmp docs/demo/git-dag-v1/verify.txt "$RUNNER_TEMP/verify.txt"
+          env -u PYTHONHOME -u PYTHONPATH python -B -m git_dag_lab inspect --compact > "$RUNNER_TEMP/inspect.json"
+          cmp evidence/git-dag-v1.json "$RUNNER_TEMP/inspect.json"
+
+      - name: Check tests, evidence freshness, and shell boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          env -u PYTHONHOME -u PYTHONPATH python -W error -m unittest discover -s tests -v
+          env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_evidence.py --check
+          bash -n tools/capture_report.sh
+          test "$(shellcheck --version | awk '$1 == "version:" {print $2}')" = "0.10.0"
+          shellcheck tools/capture_report.sh
+          test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
+
+  distribution:
+    name: Build and smoke-test distributions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the immutable event revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up exact Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.12"
+
+      - name: Build source and wheel distributions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "omar07ibrahim/hello-git"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.12"
+          test -z "${OPENAI_API_KEY:-}"
+          python -m pip install build==1.5.0 setuptools==83.0.0
+          python -m build --no-isolation --outdir "$RUNNER_TEMP/dist"
+          expected=$'git_dag_evidence_lab-0.1.0-py3-none-any.whl\ngit_dag_evidence_lab-0.1.0.tar.gz'
+          test "$(find "$RUNNER_TEMP/dist" -mindepth 1 -maxdepth 1 -type f -printf '%f\n' | sort)" = "$expected"
+
+      - name: Exercise the installed wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime="$RUNNER_TEMP/git-dag-wheel-runtime"
+          test ! -e "$runtime"
+          python -m venv "$runtime"
+          "$runtime/bin/python" -m pip install --no-deps "$RUNNER_TEMP/dist/git_dag_evidence_lab-0.1.0-py3-none-any.whl"
+          (
+            cd "$RUNNER_TEMP"
+            env -u PYTHONHOME -u PYTHONPATH "$runtime/bin/python" -B -m git_dag_lab verify
+          ) > "$RUNNER_TEMP/wheel-verify.txt"
+          cmp docs/demo/git-dag-v1/verify.txt "$RUNNER_TEMP/wheel-verify.txt"
+          test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
+
+      - name: Upload verified distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: git-dag-evidence-lab-distributions-${{ github.sha }}
+          path: ${{ runner.temp }}/dist/
+          if-no-files-found: error
+          include-hidden-files: false
+          compression-level: 0
+          retention-days: 14
