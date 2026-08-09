@@ -244,7 +244,7 @@ class EvidencePackageTests(unittest.TestCase):
         self.assertIn("**57 isolated Git invocations**", readme)
         self.assertIn(f"report receipt `{receipt_label}`", readme)
         self.assertIn(f"screenshot SHA-256 `{screenshot_label}`", readme)
-        self.assertIn("10 local subcommands are allow-listed", readme)
+        self.assertIn("11 local subcommands are allow-listed", readme)
 
 
 if __name__ == "__main__":
