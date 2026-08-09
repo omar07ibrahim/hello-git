@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="690" viewBox="0 0 1440 690" role="img" aria-labelledby="title desc" data-report-receipt="8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0">
+  <title id="title">Reproducible OFS evidence workflow</title>
+  <desc id="desc">The exact fixed inputs, normalized Git arguments, independent parser, index cross-check, and receipt shown here are bound into the evidence manifest.</desc>
+  <metadata>{"git_frontend_sha256":"f54a87f6253aab09ed7b522bd78ddeab509105b1043076209d89127e55877a48","report_receipt_sha256":"8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0","source":"evidence/git-pack-ofs-delta-v1.json","stdin_sha256":"fa3a61ef14c4439502fdbfbaf0fe8a5b666b5ee54f70d48b99a14beb172cf952"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1440" height="690" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="55" y="58">FIXED INPUTS · SINGLE THREAD · SAME RECORDED GIT BUILD · FRESH RUNS ×2</text>
+  <text class="heading" x="55" y="104">From two synthetic blobs to one source-bound receipt.</text>
+  <rect class="node" filter="url(#shadow)" x="35" y="165" width="245" height="200" rx="18"/>
+  <text class="eyebrow" x="59" y="205">01</text>
+  <text class="heading" style="font-size:21px" x="59" y="248">FIXTURE</text>
+  <text class="small" x="59" y="290">2 × 77,824 B</text>
+  <text class="small" x="59" y="326">PASS</text>
+  <path class="edge" d="M 285 265 L 310 265"/>
+  <rect class="node" filter="url(#shadow)" x="315" y="165" width="245" height="200" rx="18"/>
+  <text class="eyebrow" x="339" y="205">02</text>
+  <text class="heading" style="font-size:21px" x="339" y="248">REAL GIT</text>
+  <text class="small" x="339" y="290">git version 2.54.0</text>
+  <text class="small" x="339" y="326">PASS</text>
+  <path class="edge" d="M 565 265 L 590 265"/>
+  <rect class="node" filter="url(#shadow)" x="595" y="165" width="245" height="200" rx="18"/>
+  <text class="eyebrow" x="619" y="205">03</text>
+  <text class="heading" style="font-size:21px" x="619" y="248">PACK PARSER</text>
+  <text class="small" x="619" y="290">OFS replay</text>
+  <text class="small" x="619" y="326">PASS</text>
+  <path class="edge" d="M 845 265 L 870 265"/>
+  <rect class="node" filter="url(#shadow)" x="875" y="165" width="245" height="200" rx="18"/>
+  <text class="eyebrow" x="899" y="205">04</text>
+  <text class="heading" style="font-size:21px" x="899" y="248">INDEX V2</text>
+  <text class="small" x="899" y="290">offset + CRC</text>
+  <text class="small" x="899" y="326">PASS</text>
+  <path class="edge" d="M 1125 265 L 1150 265"/>
+  <rect class="node" filter="url(#shadow)" x="1155" y="165" width="245" height="200" rx="18"/>
+  <text class="eyebrow" x="1179" y="205">05</text>
+  <text class="heading" style="font-size:21px" x="1179" y="248">RECEIPT</text>
+  <text class="small" x="1179" y="290">8c2b8b07e9ab4849…</text>
+  <text class="small" x="1179" y="326">PASS</text>
+  <rect x="35" y="425" width="1365" height="190" rx="16" fill="#07111f" stroke="#30476f"/>
+  <text class="mono" x="62" y="469">$ git pack-objects --delta-base-offset --window=2 --depth=1 --threads=1</text>
+  <text class="mono" x="62" y="505">  --compression=0 --no-reuse-delta --no-reuse-object --index-version=2 &lt;private&gt;/fixture</text>
+  <text class="small" x="62" y="552">stdin SHA-256 fa3a61ef14c4439502fdbfbaf0fe8a5b666b5ee54f70d48b99a14beb172cf952</text>
+  <text class="small" x="62" y="582">Git frontend SHA-256 f54a87f6253aab09ed7b522bd78ddeab509105b1043076209d89127e55877a48 · byte identity scope: same recorded build</text>
+</svg>

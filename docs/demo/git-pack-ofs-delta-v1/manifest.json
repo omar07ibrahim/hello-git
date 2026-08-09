@@ -1,0 +1,177 @@
+{
+  "artifacts": [
+    {
+      "path": "docs/assets/git-pack-ofs-cli.svg",
+      "role": "visualized exact pack-ofs-verify transcript",
+      "sha256": "66e4ca96db44e7fbb4e6c31e95385fd963a270854b37a973943d0279bfdd4e8f",
+      "size": 2768
+    },
+    {
+      "path": "docs/assets/git-pack-ofs-reconstruction.svg",
+      "role": "actual OFS base distance and reconstructed object flow",
+      "sha256": "e2c655c185b562767e4bd92b7de45be11b49425e0800a291ab24dd104339ba32",
+      "size": 3884
+    },
+    {
+      "path": "docs/assets/git-pack-ofs-report.png",
+      "role": "attested OFS_DELTA offline report browser capture",
+      "sha256": "2e3a4e813cebf28a18d60bc65d9d3eb5d5426b2e702ac36a560a7c52465a3041",
+      "size": 598564
+    },
+    {
+      "path": "docs/assets/git-pack-ofs-workflow.svg",
+      "role": "source-bound Git OFS evidence workflow",
+      "sha256": "3641349f1632c500ef657c15a6e3f1c53b54b750bddf4c732e7b5d13d9c05610",
+      "size": 4689
+    },
+    {
+      "path": "docs/demo/git-pack-ofs-delta-v1/capture-attestation.json",
+      "role": "OFS capture provenance and isolation attestation",
+      "sha256": "f4d4fd7ec4551516c33e452e447dc55b4572950d3faa1fac155985c1c81e0107",
+      "size": 2026
+    },
+    {
+      "path": "docs/demo/git-pack-ofs-delta-v1/inspect.json",
+      "role": "exact pretty pack-ofs-inspect stdout",
+      "sha256": "3234380d7f5e9a6590bb3f0ee33206c8cf588cc8af054979448d4020c5421637",
+      "size": 4712
+    },
+    {
+      "path": "docs/demo/git-pack-ofs-delta-v1/rendered-dom.html",
+      "role": "actual DOM emitted during the OFS report capture",
+      "sha256": "acf985e2f5a5d68ef02ecad57dcbf9493f8bcd5b2aa36dfac1a39dd5b748e0d5",
+      "size": 6288
+    },
+    {
+      "path": "docs/demo/git-pack-ofs-delta-v1/report.html",
+      "role": "dependency-free OFS_DELTA offline report",
+      "sha256": "ac67aa531f616b148df847a92e3a228063ea9591338054b247118f4065d7b486",
+      "size": 6288
+    },
+    {
+      "path": "docs/demo/git-pack-ofs-delta-v1/verify.txt",
+      "role": "exact pack-ofs-verify stdout",
+      "sha256": "c33227146c3483414cb444d82ddcffb41abda71a9911d622e0e0f0cc66721d59",
+      "size": 212
+    },
+    {
+      "path": "evidence/git-pack-ofs-delta-v1.json",
+      "role": "canonical compact real OFS_DELTA CLI evidence",
+      "sha256": "0a5a820ae6a1d985ff54f99f10b632a548a3cf84f36fceffacc359be62c942e1",
+      "size": 3459
+    }
+  ],
+  "capture": {
+    "attestation": "docs/demo/git-pack-ofs-delta-v1/capture-attestation.json",
+    "attestation_receipt_sha256": "5891c29f10f3f5bddd736aae13829a16c4899a6cda2c47952d190025342c31b9",
+    "browser_binary": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
+    "browser_sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
+    "browser_version": "Chromium 140.0.7339.186",
+    "container_image": "mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c",
+    "network": "none",
+    "rendered_dom_sha256": "acf985e2f5a5d68ef02ecad57dcbf9493f8bcd5b2aa36dfac1a39dd5b748e0d5",
+    "screenshot_sha256": "2e3a4e813cebf28a18d60bc65d9d3eb5d5426b2e702ac36a560a7c52465a3041",
+    "status": "attested",
+    "viewport": {
+      "height": 1500,
+      "width": 1440
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "git_dag_lab",
+        "pack-ofs-verify"
+      ],
+      "exit_code": 0,
+      "fresh_runs": 2,
+      "stderr_bytes": 0,
+      "stdout": "docs/demo/git-pack-ofs-delta-v1/verify.txt"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "git_dag_lab",
+        "pack-ofs-inspect",
+        "--compact"
+      ],
+      "exit_code": 0,
+      "fresh_runs": 2,
+      "stderr_bytes": 0,
+      "stdout": "evidence/git-pack-ofs-delta-v1.json"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "git_dag_lab",
+        "pack-ofs-inspect"
+      ],
+      "exit_code": 0,
+      "fresh_runs": 2,
+      "stderr_bytes": 0,
+      "stdout": "docs/demo/git-pack-ofs-delta-v1/inspect.json"
+    }
+  ],
+  "git_build": {
+    "byte_identity_scope": "same recorded Git build",
+    "frontend_sha256": "f54a87f6253aab09ed7b522bd78ddeab509105b1043076209d89127e55877a48",
+    "pack_objects_sha256": "f54a87f6253aab09ed7b522bd78ddeab509105b1043076209d89127e55877a48",
+    "version": "git version 2.54.0"
+  },
+  "report_receipt_sha256": "8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0",
+  "schema_version": "git-pack-ofs-evidence-manifest/v1",
+  "sources": [
+    {
+      "path": "git_dag_lab/__init__.py",
+      "sha256": "c3aa1ce7deabf04c718f103bc2ba93cd964efbf5cff159b26d87fbd1c6bd4279",
+      "size": 475
+    },
+    {
+      "path": "git_dag_lab/__main__.py",
+      "sha256": "33386ce299571769ff97cf7c6757336ff49ed023357bdcd1579d502d667391a5",
+      "size": 105
+    },
+    {
+      "path": "git_dag_lab/cli.py",
+      "sha256": "e634feb9a908e3b0f46e1011c64667000b9e43ceb6ce1233b9fda1ce166a35ac",
+      "size": 2972
+    },
+    {
+      "path": "git_dag_lab/lab.py",
+      "sha256": "289e688e84024c20b94f3aa2e59be693b81b507b8581fe5547cc8f5eb223879b",
+      "size": 34676
+    },
+    {
+      "path": "git_dag_lab/pack.py",
+      "sha256": "b2b7061751f09997673b09a235e5257c8a2e93de82ad523703aa1bc015d4c765",
+      "size": 39441
+    },
+    {
+      "path": "tools/generate_evidence.py",
+      "sha256": "9276b529ec13eaa6ceda1cab1282b6679a689697e5c6930ca17b5e0bc8ba3a92",
+      "size": 49590
+    },
+    {
+      "path": "tools/generate_pack_evidence.py",
+      "sha256": "234af1ac72189cec9034d3b7f396f6950b01564495208a8891620bb7721ec3a9",
+      "size": 41376
+    },
+    {
+      "path": "tools/generate_ofs_evidence.py",
+      "sha256": "866a7fbe41d0cf87386f07d7ee82cf48382836333a2ee7f3cda3862d0ea26c7a",
+      "size": 41449
+    },
+    {
+      "path": "tools/capture_ofs_report.sh",
+      "sha256": "638de7acced052805c52e2bb85de3dd1697a61254595299111f8ab6fea3afae1",
+      "size": 11144
+    }
+  ]
+}

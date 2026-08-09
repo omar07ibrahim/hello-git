@@ -1,0 +1,1 @@
+PASS git-pack-ofs-delta-lab/v1 objects=2 pack_version=2 index_version=2 deltas=1 pack_sha1=736fdd73b58a6a68dfefec9288533a8d0a41a9e6 receipt_sha256=8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0

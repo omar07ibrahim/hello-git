@@ -1,0 +1,60 @@
+{
+  "attestation": {
+    "browser": {
+      "binary_path": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
+      "sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
+      "version": "Chromium 140.0.7339.186"
+    },
+    "container": {
+      "architecture": "amd64",
+      "image": "mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c"
+    },
+    "input": {
+      "report": {
+        "path": "docs/demo/git-pack-ofs-delta-v1/report.html",
+        "report_receipt_sha256": "8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0",
+        "sha256": "ac67aa531f616b148df847a92e3a228063ea9591338054b247118f4065d7b486",
+        "size": 6288
+      }
+    },
+    "isolation": {
+      "capabilities": "all-dropped",
+      "demo_mount": "read-only",
+      "network": "none",
+      "no_new_privileges": true,
+      "pull": "never",
+      "root_filesystem": "read-only",
+      "user": "caller-nonroot"
+    },
+    "outputs": {
+      "rendered_dom": {
+        "path": "docs/demo/git-pack-ofs-delta-v1/rendered-dom.html",
+        "sha256": "acf985e2f5a5d68ef02ecad57dcbf9493f8bcd5b2aa36dfac1a39dd5b748e0d5",
+        "size": 6288
+      },
+      "screenshot": {
+        "height": 1500,
+        "path": "docs/assets/git-pack-ofs-report.png",
+        "sha256": "2e3a4e813cebf28a18d60bc65d9d3eb5d5426b2e702ac36a560a7c52465a3041",
+        "size": 598564,
+        "width": 1440
+      }
+    },
+    "schema_version": "git-pack-ofs-browser-capture-attestation/v1",
+    "script": {
+      "path": "tools/capture_ofs_report.sh",
+      "sha256": "638de7acced052805c52e2bb85de3dd1697a61254595299111f8ab6fea3afae1",
+      "size": 11144
+    },
+    "viewport": {
+      "device_scale_factor": 1,
+      "height": 1500,
+      "width": 1440
+    }
+  },
+  "receipt": {
+    "algorithm": "sha256",
+    "canonicalization": "UTF-8 JSON; sorted keys; compact separators",
+    "sha256": "5891c29f10f3f5bddd736aae13829a16c4899a6cda2c47952d190025342c31b9"
+  }
+}

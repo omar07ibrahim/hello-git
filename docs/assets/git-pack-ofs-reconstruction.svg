@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" role="img" aria-labelledby="title desc" data-report-receipt="8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0">
+  <title id="title">Real OFS_DELTA reconstruction</title>
+  <desc id="desc">Physical offsets, the biased backward distance, logical object sizes, and reconstructed object IDs come from the verified Git-generated pack.</desc>
+  <metadata>{"base_oid":"586c379527cbf256bb8dc7558e808ae5150a8959","delta_oid":"d2e8559ccc7b0bcfd193b7e9ad0b9d59982eb7c6","pack_sha256":"080b1ca0b5cdb6c5e4cac746a48b8feb218aa7ec0b5583024a493d110c319a31","report_receipt_sha256":"8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0","source":"evidence/git-pack-ofs-delta-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1440" height="760" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="55" y="58">REAL GIT PACK · ONE FULL BLOB · ONE OFS_DELTA · ZERO REF_DELTA</text>
+  <text class="heading" x="55" y="104">A physical backward edge reconstructs a new logical blob.</text>
+  <rect class="node" filter="url(#shadow)" x="55" y="170" width="390" height="250" rx="18"/>
+  <text class="eyebrow" x="85" y="211">BASE ENTRY · FULL</text>
+  <text class="heading" style="font-size:27px" x="85" y="254">offset 12</text>
+  <text class="body" x="85" y="296">77843 packed bytes · 77824 logical bytes</text>
+  <text class="small" x="85" y="340">line-1024-changed</text>
+  <text class="mono" x="85" y="382">586c379527cbf256bb8dc7558e808ae5150a8959</text>
+  <rect class="node" filter="url(#shadow)" x="790" y="170" width="595" height="250" rx="18"/>
+  <text class="eyebrow" x="820" y="211">DELTA ENTRY · TYPE 6</text>
+  <text class="heading" style="font-size:27px" x="820" y="254">offset 77855 − distance 77843</text>
+  <text class="body" x="820" y="296">biased bytes 0x83df13 · program 26 bytes</text>
+  <text class="small" x="820" y="340">baseline · depth 1</text>
+  <text class="mono" x="820" y="382">d2e8559ccc7b0bcfd193b7e9ad0b9d59982eb7c6</text>
+  <path class="edge" d="M 790 282 C 665 282 575 282 445 282"/>
+  <text class="small" x="515" y="259">base_offset = 12</text>
+  <rect x="55" y="485" width="1330" height="170" rx="18" fill="#102b2c" stroke="#2fd6af"/>
+  <text class="eyebrow" x="85" y="528">INDEPENDENT REPLAY · 12/12 CHECKS</text>
+  <text class="body" x="85" y="572">Base OID 586c379527cbf256bb8dc7558e808ae5150a8959 → apply bounded copy/insert program → target OID d2e8559ccc7b0bcfd193b7e9ad0b9d59982eb7c6</text>
+  <text class="body" x="85" y="610">Index v2 binds physical offsets 12 and 77855, plus CRC32 b6dfc85b and 84af9f53.</text>
+  <text class="small" x="85" y="640">receipt 8c2b8b07e9ab48492e9de13167c86eaf8835adcceecdcff958a6080a7ae540b0</text>
+</svg>
