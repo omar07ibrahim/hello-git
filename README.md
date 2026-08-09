@@ -61,6 +61,8 @@ The verifier does not trust the pack filename or Git's index. It parses the vari
 
 The checked-in production pack evidence remains a deliberately closed non-delta baseline: pack v2 and index v2, at most 64 objects, 1 MiB files, and 256 KiB expanded objects. The parser now separately accepts bounded OFS_DELTA test vectors with exact earlier-entry bases, depth 4, 4,096 instructions, and a 4 MiB aggregate expansion budget. REF_DELTA, thin packs, other object formats, arbitrary repositories, reachability, and pack optimization remain explicitly unsupported. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
 
+Delta decoding is parser-only at this layer; the next source-bound fixture must prove real Git-generated OFS bytes before the README visuals claim that production path.
+
 ## The hard part: verify Git without trusting Git
 
 Writing an object with Git and asking Git to identify it would only prove that Git agrees with itself. This lab reads the raw stored bytes and independently computes:
