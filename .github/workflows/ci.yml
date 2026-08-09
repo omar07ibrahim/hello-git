@@ -68,6 +68,10 @@ jobs:
           cmp docs/demo/git-pack-index-v1/verify.txt "$RUNNER_TEMP/pack-verify.txt"
           env -u PYTHONHOME -u PYTHONPATH python -B -m git_dag_lab pack-inspect --compact > "$RUNNER_TEMP/pack-inspect.json"
           cmp evidence/git-pack-index-v1.json "$RUNNER_TEMP/pack-inspect.json"
+          env -u PYTHONHOME -u PYTHONPATH python -B -m git_dag_lab pack-ofs-verify > "$RUNNER_TEMP/pack-ofs-verify.txt"
+          cmp docs/demo/git-pack-ofs-delta-v1/verify.txt "$RUNNER_TEMP/pack-ofs-verify.txt"
+          env -u PYTHONHOME -u PYTHONPATH python -B -m git_dag_lab pack-ofs-inspect --compact > "$RUNNER_TEMP/pack-ofs-inspect.json"
+          cmp evidence/git-pack-ofs-delta-v1.json "$RUNNER_TEMP/pack-ofs-inspect.json"
 
       - name: Check tests, evidence freshness, and shell boundary
         shell: bash
@@ -76,6 +80,7 @@ jobs:
           env -u PYTHONHOME -u PYTHONPATH python -W error -m unittest discover -s tests -v
           env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_evidence.py --check
           env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_pack_evidence.py --check
+          env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_ofs_evidence.py --check
           bash -n tools/capture_report.sh
           bash -n tools/capture_pack_report.sh
           bash -n tools/capture_ofs_report.sh
@@ -131,6 +136,11 @@ jobs:
             env -u PYTHONHOME -u PYTHONPATH "$runtime/bin/python" -B -m git_dag_lab pack-verify
           ) > "$RUNNER_TEMP/wheel-pack-verify.txt"
           cmp docs/demo/git-pack-index-v1/verify.txt "$RUNNER_TEMP/wheel-pack-verify.txt"
+          (
+            cd "$RUNNER_TEMP"
+            env -u PYTHONHOME -u PYTHONPATH "$runtime/bin/python" -B -m git_dag_lab pack-ofs-verify
+          ) > "$RUNNER_TEMP/wheel-pack-ofs-verify.txt"
+          cmp docs/demo/git-pack-ofs-delta-v1/verify.txt "$RUNNER_TEMP/wheel-pack-ofs-verify.txt"
           test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
 
       - name: Upload verified distributions

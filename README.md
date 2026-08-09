@@ -65,7 +65,17 @@ The checked-in production pack evidence remains a deliberately closed non-delta 
 
 ### Delta runtime: real OFS bytes
 
-The separate `pack-ofs-*` path now stores two fixed 77,824-byte synthetic blobs, changes exactly one numbered record, and asks real `git pack-objects --delta-base-offset` for a depth-one pack. It fails closed unless Git emits exactly one full blob plus one OFS_DELTA, then independently reconstructs both logical objects and cross-checks their physical offsets and CRC32 rows against index v2. Its normalized argv and exact stdin digest are receipt-bound; byte identity is claimed only for repeated runs with the same Git build. Source-bound OFS visuals are intentionally deferred to the next evidence-only commit.
+The separate `pack-ofs-*` path stores two fixed 77,824-byte synthetic blobs, changes exactly one numbered record, and asks real `git pack-objects --delta-base-offset` for a depth-one pack. It fails closed unless Git emits exactly one full blob plus one OFS_DELTA, then independently reconstructs both logical objects and cross-checks their physical offsets and CRC32 rows against index v2. Its normalized argv and exact stdin digest are receipt-bound; byte identity is claimed only for repeated runs with the same recorded Git build.
+
+![Actual pinned-Chromium screenshot of the real OFS_DELTA report, physical entries, checks, command provenance, and CLI receipt](docs/assets/git-pack-ofs-report.png)
+
+<p align="center"><sub>Attested 1440×1500 Chromium capture. Provenance: OFS report receipt `8c2b8b07…540b0`; screenshot SHA-256 `2e3a4e81…a3041`. Git 2.54.0 generated one full blob and one OFS_DELTA from two fixed synthetic blobs; zero REF_DELTA, thin-pack, arbitrary-repository, authentication, network, secret, or host-data claims.</sub></p>
+
+![Actual physical OFS base offset, biased distance bytes, independent reconstruction, logical OIDs, index offsets, and CRC32 rows](docs/assets/git-pack-ofs-reconstruction.svg)
+
+![Source-bound workflow from fixed inputs and exact Git argv through independent replay, index binding, and receipt](docs/assets/git-pack-ofs-workflow.svg)
+
+![Exact real pack-ofs-verify stdout with actual pack and receipt digests](docs/assets/git-pack-ofs-cli.svg)
 
 ## The hard part: verify Git without trusting Git
 
@@ -94,26 +104,28 @@ See [SECURITY.md](SECURITY.md) for the threat model and trusted-input boundary.
 
 ## Evidence pipeline
 
-Every README visual begins with a canonical production CLI document. The DAG and pack generators each run fresh experiments twice, require byte-identical outputs, derive their SVGs and offline HTML, and bind every artifact into a hash manifest. Digest-pinned Chromium captures both reports in read-only containers with `--network none`. Separate attestations bind each exact report, rendered DOM, PNG, browser binary/version, container digest, isolation policy, viewport, and capture-script hash; without the matching attestation, a generator refuses to call its screenshot verified.
+Every README visual begins with a canonical production CLI document. The DAG, non-delta pack, and OFS generators each run fresh experiments twice, require byte-identical outputs under their recorded runtime, derive their SVGs and offline HTML, and bind every artifact into a hash manifest. Digest-pinned Chromium captures all three reports in read-only containers with `--network none`. Separate attestations bind each exact report, rendered DOM, PNG, browser binary/version, container digest, isolation policy, viewport, and capture-script hash; without the matching attestation, a generator refuses to call its screenshot verified.
 
 ![Architecture of the fixed scenario, real Git plumbing, independent verification, and evidence publication pipeline](docs/assets/evidence-pipeline.svg)
 
 ### Reproduce the checked-in evidence
 
 ```bash
-# Verify both JSON/transcript/visual/report/manifest packages and PNG attestations.
+# Verify all JSON/transcript/visual/report/manifest packages and PNG attestations.
 python3 -B tools/generate_evidence.py --check
 python3 -B tools/generate_pack_evidence.py --check
+python3 -B tools/generate_ofs_evidence.py --check
 
-# Rebuild and recapture either offline report with pinned Chromium.
+# Rebuild and recapture any offline report with pinned Chromium.
 tools/capture_report.sh
 tools/capture_pack_report.sh
+tools/capture_ofs_report.sh
 
 # Run all parser, boundary, CLI, evidence, and provenance tests.
 python3 -W error -m unittest discover -s tests -v
 ```
 
-Current verified baseline: **101 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
+Current verified baseline: **113 tests**, **9/9 graph invariants**, **7/7 baseline pack checks**, **12/12 OFS checks**, **57 isolated Git invocations** in the DAG evidence run, three independently replayed evidence packages, and three attested offline browser captures.
 
 | Artifact | What it proves |
 |---|---|
@@ -132,6 +144,12 @@ Current verified baseline: **101 tests**, **9/9 graph invariants**, **7/7 pack/i
 | [`git-pack-integrity.svg`](docs/assets/git-pack-integrity.svg) | Receipt-derived pack/index checksum and row-binding workflow |
 | [`git-pack-report.png`](docs/assets/git-pack-report.png) | Actual Chromium rendering of the pack/index report at 1440×1500 |
 | [`git-pack-index-v1/manifest.json`](docs/demo/git-pack-index-v1/manifest.json) | Hash/size/source/command/capture inventory for every pack visual and output |
+| [`evidence/git-pack-ofs-delta-v1.json`](evidence/git-pack-ofs-delta-v1.json) | Canonical real OFS_DELTA receipt, fixed mutation, physical representation, reconstructed logical objects, and non-claims |
+| [`git-pack-ofs-cli.svg`](docs/assets/git-pack-ofs-cli.svg) | Exact production `pack-ofs-verify` stdout rendered as an accessible terminal panel |
+| [`git-pack-ofs-reconstruction.svg`](docs/assets/git-pack-ofs-reconstruction.svg) | Actual OFS distance bytes, base edge, independent reconstruction, OIDs, index offsets, and CRC32 |
+| [`git-pack-ofs-workflow.svg`](docs/assets/git-pack-ofs-workflow.svg) | Fixed inputs, normalized Git argv, recorded Git build, parser, index binding, and receipt |
+| [`git-pack-ofs-report.png`](docs/assets/git-pack-ofs-report.png) | Actual Chromium rendering of the OFS_DELTA report at 1440×1500 |
+| [`git-pack-ofs-delta-v1/manifest.json`](docs/demo/git-pack-ofs-delta-v1/manifest.json) | Hash/size/source/Git-build/command/capture inventory for every OFS visual and output |
 
 ## Test coverage by risk
 
