@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="580" viewBox="0 0 1440 580" role="img" aria-labelledby="title desc" data-report-receipt="a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0">
+  <title id="title">Independent pack/index integrity chain</title>
+  <desc id="desc">The production verifier reconstructs each logical object, checks entry CRCs and offsets, then binds both file checksums.</desc>
+  <metadata>{"report_receipt_sha256":"a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0","source":"evidence/git-pack-index-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1440" height="580" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="55" y="58">GIT WRITES · PYTHON INDEPENDENTLY READS · NO MODELLED SUCCESS</text>
+  <text class="heading" x="55" y="104">Five checks connect raw bytes to one receipt.</text>
+  <rect class="node" filter="url(#shadow)" x="35" y="170" width="245" height="205" rx="18"/>
+  <text class="eyebrow" x="59" y="210">01</text>
+  <text class="heading" style="font-size:20px" x="59" y="252">PACK HEADER</text>
+  <text class="small" x="59" y="292">v2 · 3 objects</text>
+  <text class="small" x="59" y="329">PASS</text>
+  <path class="edge" d="M 285 270 L 310 270"/>
+  <rect class="node" filter="url(#shadow)" x="315" y="170" width="245" height="205" rx="18"/>
+  <text class="eyebrow" x="339" y="210">02</text>
+  <text class="heading" style="font-size:20px" x="339" y="252">ENTRY STREAMS</text>
+  <text class="small" x="339" y="292">bounded zlib · logic…</text>
+  <text class="small" x="339" y="329">PASS</text>
+  <path class="edge" d="M 565 270 L 590 270"/>
+  <rect class="node" filter="url(#shadow)" x="595" y="170" width="245" height="205" rx="18"/>
+  <text class="eyebrow" x="619" y="210">03</text>
+  <text class="heading" style="font-size:20px" x="619" y="252">INDEX ROWS</text>
+  <text class="small" x="619" y="292">CRC32 · exact offsets</text>
+  <text class="small" x="619" y="329">PASS</text>
+  <path class="edge" d="M 845 270 L 870 270"/>
+  <rect class="node" filter="url(#shadow)" x="875" y="170" width="245" height="205" rx="18"/>
+  <text class="eyebrow" x="899" y="210">04</text>
+  <text class="heading" style="font-size:20px" x="899" y="252">PACK BINDING</text>
+  <text class="small" x="899" y="292">146ea7519b9beee2ef83…</text>
+  <text class="small" x="899" y="329">PASS</text>
+  <path class="edge" d="M 1125 270 L 1150 270"/>
+  <rect class="node" filter="url(#shadow)" x="1155" y="170" width="245" height="205" rx="18"/>
+  <text class="eyebrow" x="1179" y="210">05</text>
+  <text class="heading" style="font-size:20px" x="1179" y="252">INDEX CHECKSUM</text>
+  <text class="small" x="1179" y="292">3cb00d5dd06610c624be…</text>
+  <text class="small" x="1179" y="329">PASS</text>
+  <rect x="35" y="430" width="1365" height="88" rx="16" fill="#102b2c" stroke="#2fd6af"/>
+  <text class="body" x="62" y="467">3/3 CRC32 and offsets cross-match · 0 deltas accepted · pack SHA-1 146ea7519b9beee2ef83e6c0d5cb80c8cf0593b5</text>
+  <text class="small" x="62" y="496">SHA-1 models Git object storage; authentication claim = false · receipt a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</text>
+</svg>

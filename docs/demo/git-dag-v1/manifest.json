@@ -130,13 +130,13 @@
   "sources": [
     {
       "path": "git_dag_lab/lab.py",
-      "sha256": "8c4bf11d5c7840a7dcbe3f4486246aff9b3a306c6bceb7b15be3fd0040a7bbd4",
-      "size": 34652
+      "sha256": "289e688e84024c20b94f3aa2e59be693b81b507b8581fe5547cc8f5eb223879b",
+      "size": 34676
     },
     {
       "path": "git_dag_lab/cli.py",
-      "sha256": "4b8b2433e0b613a303b886d08a630ddfeada557702fc47de4cd2f59824e6501d",
-      "size": 1684
+      "sha256": "03648331670cdc350fd486b2939e4914e90ee7ca7c2ea2b5cabd4eced21fe766",
+      "size": 2335
     },
     {
       "path": "tools/generate_evidence.py",

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="700" viewBox="0 0 1440 700" role="img" aria-labelledby="title desc" data-report-receipt="a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0">
+  <title id="title">Actual Git pack v2 and index v2 byte layout</title>
+  <desc id="desc">Byte offsets and section sizes are derived from the real production pack receipt.</desc>
+  <metadata>{"index_sha256":"c4f82d0cb1685f3d3b268575152993408c0ee4f00de346a3482b06c6fe59eebc","pack_sha256":"d8c8d5db126731f265cdcfe17212022001a117d6e7c2300b7939a25b93cb4052","report_receipt_sha256":"a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0","source":"evidence/git-pack-index-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1440" height="700" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="55" y="58">REAL PACK V2 · ACTUAL OFFSETS · THREE NON-DELTA BLOBS</text>
+  <text class="heading" x="55" y="104">189 pack bytes, independently decoded</text>
+  <rect x="55" y="150" width="1330" height="112" rx="18" fill="#081321" stroke="#30476f"/>
+  <rect x="55" y="150" width="84" height="112" rx="18" fill="#243d62"/>
+  <text class="small" x="65" y="210">PACK</text>
+  <rect x="139" y="150" width="274" height="112" fill="#59e3c2" fill-opacity=".72" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="149" y="187">01 · content-addressing</text>
+  <text class="small" style="fill:#06101d" x="149" y="214">offset 12</text>
+  <text class="small" style="fill:#06101d" x="149" y="239">39 bytes</text>
+  <rect x="414" y="150" width="514" height="112" fill="#bd7cff" fill-opacity=".72" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="424" y="187">02 · index-fanout</text>
+  <text class="small" style="fill:#06101d" x="424" y="214">offset 51</text>
+  <text class="small" style="fill:#06101d" x="424" y="239">73 bytes</text>
+  <rect x="928" y="150" width="317" height="112" fill="#55a8ff" fill-opacity=".72" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="938" y="187">03 · binary-header</text>
+  <text class="small" style="fill:#06101d" x="938" y="214">offset 124</text>
+  <text class="small" style="fill:#06101d" x="938" y="239">45 bytes</text>
+  <rect x="1244" y="150" width="141" height="112" rx="0 18 18 0" fill="#ffcf66"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="1252" y="199">SHA-1</text>
+  <text class="small" style="fill:#06101d" x="1252" y="225">20 B</text>
+  <text class="eyebrow" x="55" y="326">INDEX V2 FIXED TABLES</text>
+  <rect x="55" y="350" width="90" height="102" fill="#243d62" fill-opacity=".74" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="63" y="391">header</text>
+  <text class="small" style="fill:#06101d" x="63" y="419">8 B</text>
+  <rect x="145" y="350" width="650" height="102" fill="#55a8ff" fill-opacity=".74" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="153" y="391">fanout[256]</text>
+  <text class="small" style="fill:#06101d" x="153" y="419">1024 B</text>
+  <rect x="795" y="350" width="180" height="102" fill="#59e3c2" fill-opacity=".74" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="803" y="391">sorted OIDs</text>
+  <text class="small" style="fill:#06101d" x="803" y="419">60 B</text>
+  <rect x="975" y="350" width="130" height="102" fill="#bd7cff" fill-opacity=".74" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="983" y="391">CRC32</text>
+  <text class="small" style="fill:#06101d" x="983" y="419">12 B</text>
+  <rect x="1105" y="350" width="130" height="102" fill="#ff8fa3" fill-opacity=".74" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="1113" y="391">offsets</text>
+  <text class="small" style="fill:#06101d" x="1113" y="419">12 B</text>
+  <rect x="1235" y="350" width="150" height="102" fill="#ffcf66" fill-opacity=".74" stroke="#07101d"/>
+  <text class="small" style="fill:#06101d;font-weight:800" x="1243" y="391">checksums</text>
+  <text class="small" style="fill:#06101d" x="1243" y="419">40 B</text>
+  <rect x="55" y="510" width="1330" height="112" rx="16" fill="#102b2c" stroke="#2fd6af"/>
+  <text class="body" x="82" y="550">Pack trailer SHA-1 · 146ea7519b9beee2ef83e6c0d5cb80c8cf0593b5</text>
+  <text class="body" x="82" y="580">Index SHA-1 · 3cb00d5dd06610c624befb4e9e1b40f9cdbf9dfa · binds the same pack checksum</text>
+  <text class="small" x="82" y="607">Receipt SHA-256 · a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</text>
+</svg>

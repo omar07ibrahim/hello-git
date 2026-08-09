@@ -47,6 +47,8 @@ The offline report is rendered from the same canonical receipt and captured by d
 
 ![Actual pinned-Chromium screenshot of the verified pack v2 and index v2 report](docs/assets/git-pack-report.png)
 
+<p align="center"><sub>Attested 1440×1500 Chromium capture. Provenance: pack report receipt `a884aed4…a81b0`; screenshot SHA-256 `ad1f615d…4d63`. Three deterministic synthetic blobs; no delta support, arbitrary-repository compatibility, authentication, network, or host data.</sub></p>
+
 The verifier does not trust the pack filename or Git's index. It parses the variable-length pack entry headers, bounds each zlib stream, reconstructs logical blob IDs, verifies the pack trailer, then parses the 256-entry cumulative fanout table, sorted OIDs, CRC32 rows, 32/64-bit offsets, pack binding, and index checksum.
 
 ![Actual byte offsets and sizes decoded from the generated pack and index](docs/assets/git-pack-layout.svg)

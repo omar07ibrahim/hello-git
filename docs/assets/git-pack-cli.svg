@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="500" viewBox="0 0 1440 500" role="img" aria-labelledby="title desc" data-report-receipt="a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0">
+  <title id="title">Real Git pack/index CLI receipt</title>
+  <desc id="desc">Exact stdout from pack-verify; the command executed real git pack-objects and independently checked both files.</desc>
+  <metadata>{"report_receipt_sha256":"a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0","source":"evidence/git-pack-index-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1440" height="500" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="55" y="58">REAL CLI STDOUT · STDERR 0 BYTES · EXIT 0</text>
+  <rect x="55" y="92" width="1330" height="300" rx="18" fill="#050a13" stroke="#30476f"/>
+  <circle cx="88" cy="124" r="6" fill="#ff6b6b"/><circle cx="110" cy="124" r="6" fill="#ffd166"/><circle cx="132" cy="124" r="6" fill="#59e3c2"/>
+  <text class="mono" x="88" y="176"><tspan fill="#59e3c2">$</tspan> python3 -B -m git_dag_lab pack-verify</text>
+  <text class="mono" x="88" y="225">PASS git-pack-index-lab/v1 objects=3 pack_version=2 index_version=2 deltas=0 </text>
+  <text class="mono" x="88" y="265">pack_sha1=146ea7519b9beee2ef83e6c0d5cb80c8cf0593b5</text>
+  <text class="mono" x="88" y="305">receipt_sha256=a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</text>
+  <text class="small" x="88" y="353">verify.txt SHA-256 · ccab273b6f07dc72a28ad3e1065545e6bd535f766d96ad6c3dad273eea432f31</text>
+  <text class="small" x="55" y="445">Report receipt SHA-256 · a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</text>
+</svg>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+  <title>Git pack/index evidence — verified offline report</title>
+  <style>
+    *{box-sizing:border-box}:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#06101d;color:#f8fafc}body{margin:0;background:radial-gradient(circle at 82% 0,#183555 0,transparent 36%),linear-gradient(145deg,#06101d,#0d1729 65%,#101b31)}main{width:100%;min-height:1500px;padding:58px 70px}.eyebrow{color:#59e3c2;font:700 14px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}h1{margin:18px 0;font-size:62px;line-height:1.04;letter-spacing:-.04em}.lede{max-width:980px;color:#b9c8e3;font-size:21px;line-height:1.5}.receipt,pre,.panel{border:1px solid #294366;background:#091526}.receipt{display:inline-block;padding:13px 16px;border-radius:10px;color:#b8c8e4;font:13px ui-monospace,monospace}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:38px 0}.metric,.panel{border-radius:17px;padding:23px;box-shadow:0 18px 50px rgba(0,0,0,.2)}.metric{background:#0c182b;border:1px solid #294366}.metric strong{display:block;font-size:35px}.metric span{color:#93a8ca}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}h2{margin:0 0 16px;font-size:25px}table{width:100%;border-collapse:collapse}th,td{padding:13px 10px;border-bottom:1px solid #213655;text-align:left;font-size:13px}th{color:#93a8ca;text-transform:uppercase;letter-spacing:.08em}code{font-family:ui-monospace,monospace;color:#dce7fb;overflow-wrap:anywhere}.checks{list-style:none;margin:0;padding:0;display:grid;gap:9px}.checks li{display:flex;gap:11px;align-items:center;padding:11px;background:#07111f;border-radius:10px;text-transform:capitalize}.checks span{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#123b35;color:#59e3c2;font-weight:900}pre{margin:20px 0 0;padding:22px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere;color:#dce7fb;font:14px/1.65 ui-monospace,monospace}.binding{margin-top:20px;padding:19px;border:1px solid #2fd6af;border-radius:14px;background:#0d2a29}footer{display:flex;justify-content:space-between;margin-top:28px;padding-top:22px;border-top:1px solid #263957;color:#8fa4c5;font-size:13px}
+  </style>
+</head>
+<body>
+<main data-pack-receipt="a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0" data-object-count="3" data-check-count="7">
+  <p class="eyebrow">Git pack/index lab · actual offline report</p>
+  <h1>Pack v2.<br>Index v2.</h1>
+  <p class="lede">Real <code>git pack-objects</code> output is decoded independently: bounded zlib entries, logical object IDs, fanout ranges, CRC32 rows, offsets, and both file checksums.</p>
+  <div class="receipt">PASS · report receipt a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</div>
+  <section class="metrics">
+    <div class="metric"><strong>3</strong><span>packed objects</span></div>
+    <div class="metric"><strong>189</strong><span>actual pack bytes</span></div>
+    <div class="metric"><strong>1156</strong><span>actual index bytes</span></div>
+    <div class="metric"><strong>7/7</strong><span>checks passed</span></div>
+  </section>
+  <div class="grid">
+    <section class="panel"><h2>Objects in physical pack order</h2><table><thead><tr><th>fixture</th><th>OID</th><th>size</th><th>offset</th><th>CRC32</th></tr></thead><tbody><tr><td>content-addressing</td><td><code>ac0913a01c3a10dbcdf22143ad8f53d015774ff7</code></td><td>26</td><td>12</td><td><code>fb8c64c5</code></td></tr><tr><td>index-fanout</td><td><code>fda2e7ba229f29298234d2568c24b04c04e603df</code></td><td>60</td><td>51</td><td><code>c532220c</code></td></tr><tr><td>binary-header</td><td><code>fefa1cc823e0ec463b7923972b03901b52808fc1</code></td><td>32</td><td>124</td><td><code>88dbb9d0</code></td></tr></tbody></table></section>
+    <section class="panel"><h2>Independent gate</h2><ul class="checks"><li><span>✓</span>all fixture objects present</li><li><span>✓</span>delta entries absent</li><li><span>✓</span>index checksum verified</li><li><span>✓</span>index crc32 matches pack</li><li><span>✓</span>index fanout matches sorted oids</li><li><span>✓</span>index offsets match pack</li><li><span>✓</span>pack trailer verified</li></ul></section>
+  </div>
+  <section class="panel" style="margin-top:20px"><h2>Real CLI receipt</h2><pre>$ python3 -B -m git_dag_lab pack-verify
+PASS git-pack-index-lab/v1 objects=3 pack_version=2 index_version=2 deltas=0 pack_sha1=146ea7519b9beee2ef83e6c0d5cb80c8cf0593b5 receipt_sha256=a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</pre><div class="binding"><strong>Pack trailer</strong><br><code>146ea7519b9beee2ef83e6c0d5cb80c8cf0593b5</code><br><br><strong>Index checksum</strong><br><code>3cb00d5dd06610c624befb4e9e1b40f9cdbf9dfa</code><p>Delta support: false · authentication claim: false · network required: false</p></div></section>
+  <footer><span>Generated offline · no JavaScript · no external assets</span><code>evidence/git-pack-index-v1.json</code></footer>
+</main>
+</body>
+</html>

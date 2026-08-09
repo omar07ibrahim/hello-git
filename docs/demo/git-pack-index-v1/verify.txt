@@ -1,0 +1,1 @@
+PASS git-pack-index-lab/v1 objects=3 pack_version=2 index_version=2 deltas=0 pack_sha1=146ea7519b9beee2ef83e6c0d5cb80c8cf0593b5 receipt_sha256=a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0

@@ -1,0 +1,60 @@
+{
+  "attestation": {
+    "browser": {
+      "binary_path": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
+      "sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
+      "version": "Chromium 140.0.7339.186"
+    },
+    "container": {
+      "architecture": "amd64",
+      "image": "mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c"
+    },
+    "input": {
+      "report": {
+        "path": "docs/demo/git-pack-index-v1/report.html",
+        "report_receipt_sha256": "a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0",
+        "sha256": "0109d54e1e3f794fe3422ddf7720fd8c322c3ee3d82dc41c8d3ff1207f250624",
+        "size": 5268
+      }
+    },
+    "isolation": {
+      "capabilities": "all-dropped",
+      "demo_mount": "read-only",
+      "network": "none",
+      "no_new_privileges": true,
+      "pull": "never",
+      "root_filesystem": "read-only",
+      "user": "caller-nonroot"
+    },
+    "outputs": {
+      "rendered_dom": {
+        "path": "docs/demo/git-pack-index-v1/rendered-dom.html",
+        "sha256": "736bd86208630f5e1437335e009615bffd8f7bb96932587acad33b3307f1827d",
+        "size": 5268
+      },
+      "screenshot": {
+        "height": 1500,
+        "path": "docs/assets/git-pack-report.png",
+        "sha256": "ad1f615da03d2e0570a4b3b26603c310058964bfbc5dda201d176de8107e4d63",
+        "size": 590359,
+        "width": 1440
+      }
+    },
+    "schema_version": "git-pack-browser-capture-attestation/v1",
+    "script": {
+      "path": "tools/capture_pack_report.sh",
+      "sha256": "3477eeec4a10026fe95b87803f68657069c77f2b491bd69d3cddd56777924f0b",
+      "size": 11083
+    },
+    "viewport": {
+      "device_scale_factor": 1,
+      "height": 1500,
+      "width": 1440
+    }
+  },
+  "receipt": {
+    "algorithm": "sha256",
+    "canonicalization": "UTF-8 JSON; sorted keys; compact separators",
+    "sha256": "9709eafc99c848f825d083b795a9ba2802109d76b21289e2a4f72c445519c35b"
+  }
+}

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="690" viewBox="0 0 1440 690" role="img" aria-labelledby="title desc" data-report-receipt="a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0">
+  <title id="title">Actual index v2 fanout lookup</title>
+  <desc id="desc">The three populated prefix buckets, sorted object IDs, and exact index ranges come from the verified index receipt.</desc>
+  <metadata>{"report_receipt_sha256":"a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0","source":"evidence/git-pack-index-v1.json"}</metadata>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111b31"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#020617" flood-opacity="0.55"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ea2c8"/></marker>
+  </defs>
+  <rect width="1440" height="690" rx="24" fill="url(#bg)"/>
+  <style>
+    .eyebrow { font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 2px; fill: #59e3c2; }
+    .heading { font: 700 30px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+    .body { font: 500 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #bac8e4; }
+    .mono { font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #dce7fb; }
+    .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8ea2c8; }
+    .node { fill: #14223d; stroke: #38517b; stroke-width: 2; }
+    .edge { fill: none; stroke: #8ea2c8; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <text class="eyebrow" x="55" y="58">256-BUCKET CUMULATIVE FANOUT · THREE ACTUAL OBJECT IDS</text>
+  <text class="heading" x="55" y="104">Prefix lookup narrows the sorted OID table.</text>
+  <rect class="node" filter="url(#shadow)" x="55" y="160" width="180" height="105" rx="16"/>
+  <text class="eyebrow" x="82" y="198">PREFIX ac</text>
+  <text class="heading" style="font-size:25px" x="82" y="234">[0, 1)</text>
+  <path class="edge" d="M 245 212 L 320 212"/>
+  <rect x="335" y="160" width="1050" height="105" rx="16" fill="#0c182b" stroke="#30476f"/>
+  <text class="body" x="365" y="197">content-addressing · blob · 26 bytes</text>
+  <text class="mono" x="365" y="232">ac0913a01c3a10dbcdf22143ad8f53d015774ff7</text>
+  <rect class="node" filter="url(#shadow)" x="55" y="305" width="180" height="105" rx="16"/>
+  <text class="eyebrow" x="82" y="343">PREFIX fd</text>
+  <text class="heading" style="font-size:25px" x="82" y="379">[1, 2)</text>
+  <path class="edge" d="M 245 357 L 320 357"/>
+  <rect x="335" y="305" width="1050" height="105" rx="16" fill="#0c182b" stroke="#30476f"/>
+  <text class="body" x="365" y="342">index-fanout · blob · 60 bytes</text>
+  <text class="mono" x="365" y="377">fda2e7ba229f29298234d2568c24b04c04e603df</text>
+  <rect class="node" filter="url(#shadow)" x="55" y="450" width="180" height="105" rx="16"/>
+  <text class="eyebrow" x="82" y="488">PREFIX fe</text>
+  <text class="heading" style="font-size:25px" x="82" y="524">[2, 3)</text>
+  <path class="edge" d="M 245 502 L 320 502"/>
+  <rect x="335" y="450" width="1050" height="105" rx="16" fill="#0c182b" stroke="#30476f"/>
+  <text class="body" x="365" y="487">binary-header · blob · 32 bytes</text>
+  <text class="mono" x="365" y="522">fefa1cc823e0ec463b7923972b03901b52808fc1</text>
+  <rect x="55" y="610" width="1330" height="42" rx="12" fill="#102b2c" stroke="#2fd6af"/>
+  <text class="small" x="75" y="636">Every displayed bucket and range is decoded from index bytes · receipt a884aed43dbb027559f6df78ff727863b9b52b145ffb719756b2302a490a81b0</text>
+</svg>
