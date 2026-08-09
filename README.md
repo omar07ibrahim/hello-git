@@ -63,6 +63,8 @@ The verifier does not trust the pack filename or Git's index. It parses the vari
 
 The checked-in production pack evidence remains a deliberately closed non-delta baseline: pack v2 and index v2, at most 64 objects, 1 MiB files, and 256 KiB expanded objects. The parser accepts bounded OFS_DELTA entries with exact earlier-entry bases, depth 4, 4,096 instructions, three-byte offset/size ceilings, and a 16 MiB aggregate expansion budget. REF_DELTA, thin packs, other object formats, arbitrary repositories, reachability, and caller-selected pack optimization remain explicitly unsupported. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
 
+### Delta runtime: real OFS bytes
+
 The separate `pack-ofs-*` path now stores two fixed 77,824-byte synthetic blobs, changes exactly one numbered record, and asks real `git pack-objects --delta-base-offset` for a depth-one pack. It fails closed unless Git emits exactly one full blob plus one OFS_DELTA, then independently reconstructs both logical objects and cross-checks their physical offsets and CRC32 rows against index v2. Its normalized argv and exact stdin digest are receipt-bound; byte identity is claimed only for repeated runs with the same Git build. Source-bound OFS visuals are intentionally deferred to the next evidence-only commit.
 
 ## The hard part: verify Git without trusting Git
