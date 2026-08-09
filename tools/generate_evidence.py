@@ -1011,7 +1011,7 @@ def _write_artifacts(generated: Mapping[Path, bytes]) -> None:
                 temporary.flush()
                 os.fsync(temporary.fileno())
                 temporary_path = Path(temporary.name)
-            os.chmod(temporary_path, 0o644)
+            os.chmod(temporary_path, 0o600)
             os.replace(temporary_path, target)
             temporary_path = None
         finally:

@@ -13,6 +13,10 @@ The command boundary is deliberately narrow:
 - temporary roots with symlinked path components are rejected.
 - stdout and stderr are captured in private temporary files and rejected before loading into memory when either exceeds 1 MiB.
 
+## Evidence file permissions
+
+Evidence refreshes reject symlinked targets and multi-link files, stage each generated artifact as owner-read/write only (`0600`), fsync it, and atomically replace the managed target. Committed evidence is intentionally public synthetic data and may be checked out with ordinary repository permissions; this pipeline must not be used for secrets or private inputs.
+
 ## Pack/index closed subset
 
 The pack experiment passes only three fixed synthetic blob IDs to `git pack-objects`; it does not accept a repository path, revision, ref, or caller-provided object list. Generated `.pack` and `.idx` files must be regular, single-link files no larger than 1 MiB and must remain the same inode and size across the bounded read.

@@ -87,6 +87,7 @@ class PackEvidenceTests(unittest.TestCase):
             {
                 "git_dag_lab/pack.py",
                 "git_dag_lab/cli.py",
+                "tools/generate_evidence.py",
                 "tools/generate_pack_evidence.py",
                 "tools/capture_pack_report.sh",
             },

@@ -107,7 +107,7 @@ tools/capture_pack_report.sh
 python3 -W error -m unittest discover -s tests -v
 ```
 
-Current verified baseline: **89 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
+Current verified baseline: **90 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
 
 | Artifact | What it proves |
 |---|---|

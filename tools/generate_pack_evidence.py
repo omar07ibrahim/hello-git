@@ -809,6 +809,7 @@ def build_artifacts(*, allow_missing_screenshot: bool) -> dict[Path, bytes]:
         "sources": [
             _source_row(Path("git_dag_lab/pack.py")),
             _source_row(Path("git_dag_lab/cli.py")),
+            _source_row(Path("tools/generate_evidence.py")),
             _source_row(Path("tools/generate_pack_evidence.py")),
             _source_row(Path("tools/capture_pack_report.sh")),
         ],

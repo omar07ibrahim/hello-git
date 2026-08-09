@@ -5,8 +5,11 @@ import html
 import json
 from pathlib import Path
 import re
+import stat
 import struct
+import tempfile
 import unittest
+from unittest.mock import patch
 import zlib
 
 from tools import generate_evidence
@@ -245,6 +248,18 @@ class EvidencePackageTests(unittest.TestCase):
         self.assertIn(f"report receipt `{receipt_label}`", readme)
         self.assertIn(f"screenshot SHA-256 `{screenshot_label}`", readme)
         self.assertIn("11 local subcommands are allow-listed", readme)
+
+
+    def test_writer_keeps_generated_files_owner_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_root:
+            root = Path(temporary_root)
+            with patch.object(generate_evidence, "ROOT", root):
+                generate_evidence._write_artifacts(
+                    {Path("nested/evidence.txt"): b"public synthetic evidence\n"}
+                )
+            target = root / "nested/evidence.txt"
+            self.assertEqual(target.read_bytes(), b"public synthetic evidence\n")
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
 
 
 if __name__ == "__main__":
