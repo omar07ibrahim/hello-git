@@ -19,6 +19,8 @@ python3 -m git_dag_lab verify
 python3 -m git_dag_lab inspect
 python3 -m git_dag_lab pack-verify
 python3 -m git_dag_lab pack-inspect
+python3 -m git_dag_lab pack-ofs-verify
+python3 -m git_dag_lab pack-ofs-inspect
 python3 -m unittest discover -s tests -v
 ```
 
@@ -59,9 +61,9 @@ The verifier does not trust the pack filename or Git's index. It parses the vari
 
 ![Receipt-derived integrity chain from pack header through index checksum](docs/assets/git-pack-integrity.svg)
 
-The checked-in production pack evidence remains a deliberately closed non-delta baseline: pack v2 and index v2, at most 64 objects, 1 MiB files, and 256 KiB expanded objects. The parser now separately accepts bounded OFS_DELTA test vectors with exact earlier-entry bases, depth 4, 4,096 instructions, three-byte offset/size ceilings, and a 16 MiB aggregate expansion budget. REF_DELTA, thin packs, other object formats, arbitrary repositories, reachability, and pack optimization remain explicitly unsupported. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
+The checked-in production pack evidence remains a deliberately closed non-delta baseline: pack v2 and index v2, at most 64 objects, 1 MiB files, and 256 KiB expanded objects. The parser accepts bounded OFS_DELTA entries with exact earlier-entry bases, depth 4, 4,096 instructions, three-byte offset/size ceilings, and a 16 MiB aggregate expansion budget. REF_DELTA, thin packs, other object formats, arbitrary repositories, reachability, and caller-selected pack optimization remain explicitly unsupported. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
 
-Delta decoding is parser-only at this layer; the next source-bound fixture must prove real Git-generated OFS bytes before the README visuals claim that production path.
+The separate `pack-ofs-*` path now stores two fixed 77,824-byte synthetic blobs, changes exactly one numbered record, and asks real `git pack-objects --delta-base-offset` for a depth-one pack. It fails closed unless Git emits exactly one full blob plus one OFS_DELTA, then independently reconstructs both logical objects and cross-checks their physical offsets and CRC32 rows against index v2. Its normalized argv and exact stdin digest are receipt-bound; byte identity is claimed only for repeated runs with the same Git build. Source-bound OFS visuals are intentionally deferred to the next evidence-only commit.
 
 ## The hard part: verify Git without trusting Git
 
@@ -109,7 +111,7 @@ tools/capture_pack_report.sh
 python3 -W error -m unittest discover -s tests -v
 ```
 
-Current verified baseline: **99 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
+Current verified baseline: **101 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
 
 | Artifact | What it proves |
 |---|---|

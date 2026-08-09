@@ -34,6 +34,7 @@ from .lab import (
 )
 
 PACK_SCHEMA_VERSION = "git-pack-index-lab/v1"
+OFS_PACK_SCHEMA_VERSION = "git-pack-ofs-delta-lab/v1"
 PACK_VERSION = 2
 INDEX_VERSION = 2
 PACK_MAGIC = b"PACK"
@@ -55,6 +56,22 @@ PACK_BLOBS = (
         b"fanout tables map object-id prefixes to sorted index ranges\n",
     ),
 )
+_OFS_RECORD_BEFORE = b"1024:0123456789abcdef0123456789abcdef\n"
+_OFS_RECORD_AFTER = b"1024:fedcba9876543210fedcba9876543210\n"
+_OFS_BASE_PAYLOAD = b"".join(
+    f"{line:04d}:0123456789abcdef0123456789abcdef\n".encode("ascii")
+    for line in range(2_048)
+)
+_OFS_TARGET_PAYLOAD = _OFS_BASE_PAYLOAD.replace(
+    _OFS_RECORD_BEFORE,
+    _OFS_RECORD_AFTER,
+    1,
+)
+OFS_PACK_BLOBS = (
+    ("baseline", _OFS_BASE_PAYLOAD),
+    ("line-1024-changed", _OFS_TARGET_PAYLOAD),
+)
+
 _TYPE_BY_CODE = {1: "commit", 2: "tree", 3: "blob"}
 _ENTRY_KIND_BY_CODE = {**_TYPE_BY_CODE, 6: "ofs-delta"}
 
@@ -168,11 +185,11 @@ class PackReport:
         pack = self.payload["pack"]
         index = self.payload["index"]
         return (
-            f"PASS {PACK_SCHEMA_VERSION} "
+            f"PASS {self.payload['schema_version']} "
             f"objects={pack['object_count']} "
             f"pack_version={pack['version']} "
             f"index_version={index['version']} "
-            "deltas=0 "
+            f"deltas={pack['delta_count']} "
             f"pack_sha1={pack['trailer_sha1']} "
             f"receipt_sha256={self.receipt_sha256}"
         )
@@ -815,6 +832,251 @@ def _build_and_verify_pack(runner: _GitRunner, private: Path) -> PackReport:
     return PackReport(payload=_deep_freeze(payload), receipt_sha256=receipt)
 
 
+def _build_and_verify_ofs_pack(runner: _GitRunner, private: Path) -> PackReport:
+    runner.initialize()
+    if (
+        len(_OFS_BASE_PAYLOAD) != 77_824
+        or len(_OFS_TARGET_PAYLOAD) != 77_824
+        or _OFS_BASE_PAYLOAD.count(_OFS_RECORD_BEFORE) != 1
+        or _OFS_TARGET_PAYLOAD.count(_OFS_RECORD_AFTER) != 1
+    ):
+        raise VerificationError("fixed OFS fixture bytes are not exact")
+
+    expected_payloads: dict[str, bytes] = {}
+    labels_by_oid: dict[str, str] = {}
+    for label, payload in OFS_PACK_BLOBS:
+        oid = _store_blob(runner, payload)
+        expected_payloads[oid] = payload
+        labels_by_oid[oid] = label
+    if len(expected_payloads) != len(OFS_PACK_BLOBS):
+        raise VerificationError("fixed OFS fixture contains duplicate objects")
+
+    ordered_oids = tuple(sorted(expected_payloads))
+    object_input = b"".join(f"{oid}\n".encode("ascii") for oid in ordered_oids)
+    prefix = private / "fixture"
+    pack_arguments = (
+        "--delta-base-offset",
+        "--window=2",
+        "--depth=1",
+        "--threads=1",
+        "--compression=0",
+        "--no-reuse-delta",
+        "--no-reuse-object",
+        "--index-version=2",
+        os.fspath(prefix),
+    )
+    result = runner.run(
+        "pack-objects",
+        *pack_arguments,
+        stdin=object_input,
+    )
+    if result.stderr:
+        raise VerificationError("git pack-objects produced unexpected diagnostics")
+    try:
+        pack_name = result.stdout.decode("ascii").strip()
+    except UnicodeDecodeError as exc:
+        raise VerificationError("git pack-objects returned a non-ASCII checksum") from exc
+    if (
+        len(pack_name) != 40
+        or any(character not in "0123456789abcdef" for character in pack_name)
+    ):
+        raise VerificationError("git pack-objects returned an invalid checksum")
+
+    pack_path = Path(f"{prefix}-{pack_name}.pack")
+    index_path = Path(f"{prefix}-{pack_name}.idx")
+    pack_bytes = _read_regular_file(pack_path, label="generated OFS pack")
+    index_bytes = _read_regular_file(index_path, label="generated OFS index")
+    parsed_pack = parse_pack(pack_bytes)
+    parsed_index = parse_index(index_bytes)
+    _cross_check(parsed_pack, parsed_index)
+    if parsed_pack.trailer_sha1 != pack_name:
+        raise VerificationError("git OFS pack name does not match the verified trailer")
+    if {entry.oid for entry in parsed_pack.entries} != set(expected_payloads):
+        raise VerificationError("generated OFS pack object inventory is not exact")
+
+    full_entries = tuple(
+        entry for entry in parsed_pack.entries if entry.representation == "full"
+    )
+    ofs_entries = tuple(
+        entry for entry in parsed_pack.entries if entry.representation == "ofs-delta"
+    )
+    if len(full_entries) != 1 or len(ofs_entries) != 1:
+        raise VerificationError("Git did not produce exactly one full and one OFS entry")
+    base_entry = full_entries[0]
+    delta_entry = ofs_entries[0]
+    if (
+        delta_entry.base_offset != base_entry.offset
+        or delta_entry.base_oid != base_entry.oid
+        or delta_entry.delta_depth != 1
+    ):
+        raise VerificationError("generated OFS entry does not bind the exact full base")
+
+    for entry in parsed_pack.entries:
+        payload = expected_payloads[entry.oid]
+        if (
+            entry.object_type != "blob"
+            or entry.size != len(payload)
+            or entry.payload_sha256 != hashlib.sha256(payload).hexdigest()
+        ):
+            raise VerificationError("reconstructed OFS object differs from the fixture")
+
+    pack_end = len(pack_bytes) - 20
+    entry_kind, _, ofs_start = _decode_entry_header(
+        pack_bytes,
+        delta_entry.offset,
+        end=pack_end,
+    )
+    decoded_base, ofs_end = _decode_ofs_base_offset(
+        pack_bytes,
+        ofs_start,
+        end=pack_end,
+        entry_offset=delta_entry.offset,
+    )
+    ofs_distance = delta_entry.offset - base_entry.offset
+    expected_ofs_bytes = _encode_ofs_distance(ofs_distance)
+    observed_ofs_bytes = pack_bytes[ofs_start:ofs_end]
+    if (
+        entry_kind != "ofs-delta"
+        or decoded_base != base_entry.offset
+        or observed_ofs_bytes != expected_ofs_bytes
+    ):
+        raise VerificationError("generated OFS distance does not re-encode exactly")
+
+    index_rows = {entry.oid: entry for entry in parsed_index.entries}
+    objects = []
+    for entry in parsed_pack.entries:
+        indexed = index_rows[entry.oid]
+        row: dict[str, object] = {
+            **entry.as_dict(),
+            "index_crc32": f"{indexed.crc32:08x}",
+            "index_offset": indexed.offset,
+            "label": labels_by_oid[entry.oid],
+            "representation": entry.representation,
+        }
+        if entry.representation == "ofs-delta":
+            row.update(
+                {
+                    "base_label": labels_by_oid[base_entry.oid],
+                    "ofs_distance": ofs_distance,
+                    "ofs_offset_bytes_hex": observed_ofs_bytes.hex(),
+                }
+            )
+        objects.append(row)
+
+    nonzero_buckets = [
+        {
+            "cumulative": parsed_index.fanout[bucket],
+            "prefix": f"{bucket:02x}",
+            "range_start": 0 if bucket == 0 else parsed_index.fanout[bucket - 1],
+        }
+        for bucket in range(256)
+        if (
+            parsed_index.fanout[bucket]
+            != (0 if bucket == 0 else parsed_index.fanout[bucket - 1])
+        )
+    ]
+    payload: dict[str, object] = {
+        "checks": {
+            "all_fixture_objects_present": True,
+            "exactly_one_full_entry": True,
+            "exactly_one_ofs_delta_entry": True,
+            "index_checksum_verified": True,
+            "index_crc32_matches_pack": True,
+            "index_fanout_matches_sorted_oids": True,
+            "index_offsets_match_pack": True,
+            "ofs_base_entry_bound": True,
+            "ofs_distance_reencoded": True,
+            "pack_trailer_verified": True,
+            "reconstructed_objects_match_fixture": True,
+            "ref_delta_entries_absent": True,
+        },
+        "command_trace": list(runner.trace),
+        "fixture": {
+            "changed_record": {
+                "after": _OFS_RECORD_AFTER.decode("ascii").rstrip("\n"),
+                "before": _OFS_RECORD_BEFORE.decode("ascii").rstrip("\n"),
+                "line_number": 1024,
+            },
+            "object_count": len(OFS_PACK_BLOBS),
+            "objects": [
+                {
+                    "label": label,
+                    "oid": git_object_oid("blob", body),
+                    "payload_sha256": hashlib.sha256(body).hexdigest(),
+                    "size": len(body),
+                }
+                for label, body in OFS_PACK_BLOBS
+            ],
+        },
+        "index": {
+            "bytes": len(index_bytes),
+            "index_sha1": parsed_index.index_sha1,
+            "nonzero_fanout_buckets": nonzero_buckets,
+            "pack_sha1": parsed_index.pack_sha1,
+            "sha256": hashlib.sha256(index_bytes).hexdigest(),
+            "version": parsed_index.version,
+        },
+        "object_format": "sha1",
+        "objects_in_pack_order": objects,
+        "pack": {
+            "bytes": len(pack_bytes),
+            "delta_count": len(ofs_entries),
+            "full_count": len(full_entries),
+            "max_delta_depth": max(entry.delta_depth for entry in parsed_pack.entries),
+            "object_count": len(parsed_pack.entries),
+            "ofs_delta_count": len(ofs_entries),
+            "ref_delta_count": 0,
+            "sha256": hashlib.sha256(pack_bytes).hexdigest(),
+            "trailer_sha1": parsed_pack.trailer_sha1,
+            "version": parsed_pack.version,
+        },
+        "pack_objects": {
+            "normalized_argv": [
+                "git",
+                "pack-objects",
+                *pack_arguments[:-1],
+                "<private>/fixture",
+            ],
+            "stdin_bytes": len(object_input),
+            "stdin_oid_order": list(ordered_oids),
+            "stdin_sha256": hashlib.sha256(object_input).hexdigest(),
+        },
+        "scope": {
+            "arbitrary_repository_supported": False,
+            "authentication_claim": False,
+            "byte_identity_requires_same_git_build": True,
+            "fixture_kind": "two deterministic similar synthetic blobs",
+            "git_pack_objects_executed": True,
+            "network_required": False,
+            "ofs_delta_supported": True,
+            "ref_delta_supported": False,
+            "thin_pack_supported": False,
+        },
+        "schema_version": OFS_PACK_SCHEMA_VERSION,
+    }
+    receipt = hashlib.sha256(_canonical_json(payload)).hexdigest()
+    return PackReport(payload=_deep_freeze(payload), receipt_sha256=receipt)
+
+
+def run_ofs_pack_lab(root: Path | str = ".") -> PackReport:
+    """Build and independently verify a real OFS-delta pack/index pair."""
+
+    try:
+        validated_root = _validate_root(Path(root))
+        git = _find_git()
+        with tempfile.TemporaryDirectory(
+            prefix=".git-pack-ofs-delta-lab-",
+            dir=validated_root,
+        ) as private_name:
+            workspace = _new_workspace(validated_root, Path(private_name))
+            runner = _GitRunner(git, workspace)
+            return _build_and_verify_ofs_pack(runner, workspace.private)
+    except LabError:
+        raise
+    except (OSError, TypeError, ValueError) as exc:
+        raise LabError("isolated OFS pack lab setup failed") from exc
+
+
 def run_pack_lab(root: Path | str = ".") -> PackReport:
     """Build and verify a real pack/index pair below ``root``, then remove it."""
 
@@ -842,6 +1104,7 @@ __all__ = [
     "MAX_TOTAL_EXPANDED_BYTES",
     "MAX_PACK_BYTES",
     "MAX_PACK_OBJECTS",
+    "OFS_PACK_SCHEMA_VERSION",
     "PACK_SCHEMA_VERSION",
     "PACK_VERSION",
     "IndexEntry",
@@ -851,5 +1114,6 @@ __all__ = [
     "ParsedPack",
     "parse_index",
     "parse_pack",
+    "run_ofs_pack_lab",
     "run_pack_lab",
 ]

@@ -9,7 +9,7 @@ import sys
 from typing import TextIO
 
 from .lab import LabError, run_lab
-from .pack import run_pack_lab
+from .pack import run_ofs_pack_lab, run_pack_lab
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,6 +42,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="emit canonical JSON on one line instead of indented JSON",
     )
+
+    subparsers.add_parser(
+        "pack-ofs-verify",
+        help="build and independently verify a real OFS-delta pack/index pair",
+    )
+    ofs_inspect_parser = subparsers.add_parser(
+        "pack-ofs-inspect",
+        help="print the complete machine-readable OFS-delta evidence document",
+    )
+    ofs_inspect_parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="emit canonical JSON on one line instead of indented JSON",
+    )
     return parser
 
 
@@ -59,7 +73,9 @@ def main(
     args = build_parser().parse_args(argv)
 
     try:
-        if args.command.startswith("pack-"):
+        if args.command.startswith("pack-ofs-"):
+            report = run_ofs_pack_lab(root if root is not None else Path.cwd())
+        elif args.command.startswith("pack-"):
             report = run_pack_lab(root if root is not None else Path.cwd())
         else:
             report = run_lab(root if root is not None else Path.cwd())
@@ -67,7 +83,7 @@ def main(
         errors.write(f"ERROR git-dag-lab: {exc}\n")
         return 1
 
-    if args.command in {"verify", "pack-verify"}:
+    if args.command in {"verify", "pack-verify", "pack-ofs-verify"}:
         output.write(report.receipt_line + "\n")
     else:
         output.write(report.to_json(pretty=not args.compact) + "\n")

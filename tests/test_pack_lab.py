@@ -22,11 +22,13 @@ from git_dag_lab.pack import (
     MAX_OBJECT_BYTES,
     MAX_PACK_BYTES,
     MAX_TOTAL_EXPANDED_BYTES,
+    OFS_PACK_SCHEMA_VERSION,
     PACK_MAGIC,
     PACK_SCHEMA_VERSION,
     PACK_VERSION,
     parse_index,
     parse_pack,
+    run_ofs_pack_lab,
     run_pack_lab,
 )
 
@@ -608,6 +610,99 @@ class PackRuntimeTests(unittest.TestCase):
         self.assertTrue(all(report["checks"].values()))
         self.assertFalse(report["scope"]["delta_entries_supported"])
         self.assertFalse(report["scope"]["authentication_claim"])
+
+
+    def test_real_ofs_pack_is_deterministic_exact_and_leaves_no_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = run_ofs_pack_lab(root)
+            self.assertEqual(list(root.iterdir()), [])
+            second = run_ofs_pack_lab(root)
+            self.assertEqual(list(root.iterdir()), [])
+
+        self.assertEqual(first.to_json(), second.to_json())
+        report = first.document["report"]
+        self.assertEqual(report["schema_version"], OFS_PACK_SCHEMA_VERSION)
+        self.assertEqual(report["pack"]["version"], PACK_VERSION)
+        self.assertEqual(report["index"]["version"], INDEX_VERSION)
+        self.assertEqual(report["pack"]["object_count"], 2)
+        self.assertEqual(report["pack"]["full_count"], 1)
+        self.assertEqual(report["pack"]["delta_count"], 1)
+        self.assertEqual(report["pack"]["ofs_delta_count"], 1)
+        self.assertEqual(report["pack"]["ref_delta_count"], 0)
+        self.assertEqual(report["pack"]["max_delta_depth"], 1)
+        self.assertEqual(
+            report["command_trace"],
+            ["init", "hash-object", "hash-object", "pack-objects"],
+        )
+        self.assertEqual(
+            report["pack_objects"]["normalized_argv"],
+            [
+                "git",
+                "pack-objects",
+                "--delta-base-offset",
+                "--window=2",
+                "--depth=1",
+                "--threads=1",
+                "--compression=0",
+                "--no-reuse-delta",
+                "--no-reuse-object",
+                "--index-version=2",
+                "<private>/fixture",
+            ],
+        )
+        self.assertEqual(report["pack_objects"]["stdin_bytes"], 82)
+        self.assertRegex(report["pack_objects"]["stdin_sha256"], r"^[0-9a-f]{64}$")
+        self.assertTrue(all(report["checks"].values()))
+        self.assertTrue(report["scope"]["ofs_delta_supported"])
+        self.assertFalse(report["scope"]["ref_delta_supported"])
+        self.assertFalse(report["scope"]["thin_pack_supported"])
+        representations = [
+            entry["representation"] for entry in report["objects_in_pack_order"]
+        ]
+        self.assertEqual(representations, ["full", "ofs-delta"])
+        delta = report["objects_in_pack_order"][1]
+        self.assertEqual(delta["delta_depth"], 1)
+        self.assertEqual(delta["base_offset"], report["objects_in_pack_order"][0]["offset"])
+        self.assertRegex(delta["ofs_offset_bytes_hex"], r"^[0-9a-f]{2,6}$")
+
+    def test_ofs_pack_cli_exposes_receipt_and_canonical_document(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            self.assertEqual(
+                main(
+                    ["pack-ofs-verify"],
+                    root=root,
+                    stdout=stdout,
+                    stderr=stderr,
+                ),
+                0,
+            )
+            self.assertEqual(stderr.getvalue(), "")
+            self.assertRegex(
+                stdout.getvalue(),
+                rf"^PASS {OFS_PACK_SCHEMA_VERSION} objects=2 .* "
+                rf"deltas=1 .* receipt_sha256=[0-9a-f]{{64}}\n$",
+            )
+
+            inspect_output = io.StringIO()
+            self.assertEqual(
+                main(
+                    ["pack-ofs-inspect", "--compact"],
+                    root=root,
+                    stdout=inspect_output,
+                    stderr=io.StringIO(),
+                ),
+                0,
+            )
+            inspected = json.loads(inspect_output.getvalue())
+            self.assertEqual(
+                inspected["report"]["schema_version"],
+                OFS_PACK_SCHEMA_VERSION,
+            )
+            self.assertEqual(inspected["report"]["pack"]["ofs_delta_count"], 1)
 
     def test_receipt_binds_the_complete_payload(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
