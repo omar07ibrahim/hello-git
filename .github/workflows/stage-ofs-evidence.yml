@@ -1,7 +1,8 @@
 name: Stage OFS evidence
 
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [synchronize]
 
 permissions:
   contents: read
@@ -12,6 +13,7 @@ concurrency:
 
 jobs:
   stage:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     name: Build and attest OFS evidence
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -21,7 +23,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up exact Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -30,13 +32,18 @@ jobs:
 
       - name: Assert staging boundary
         shell: bash
+        env:
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "omar07ibrahim/hello-git"
-          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
-          [[ "$GITHUB_REF" =~ ^refs/heads/[A-Za-z0-9._/-]+$ ]]
+          test "$GITHUB_EVENT_NAME" = "pull_request"
+          [[ "$GITHUB_REF" =~ ^refs/pull/[1-9][0-9]*/merge$ ]]
           [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$HEAD_REPOSITORY" = "$GITHUB_REPOSITORY"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           test "$(git rev-parse --show-toplevel)" = "$GITHUB_WORKSPACE"
           test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.12"
           test "$(git version)" = "git version 2.54.0"
@@ -92,7 +99,7 @@ jobs:
       - name: Upload exact staged evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: hello-git-ofs-evidence-${{ github.sha }}
+          name: hello-git-ofs-evidence-${{ github.event.pull_request.head.sha }}
           path: |
             evidence/git-pack-ofs-delta-v1.json
             docs/demo/git-pack-ofs-delta-v1/verify.txt
