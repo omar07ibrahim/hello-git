@@ -35,7 +35,7 @@ from tools.generate_evidence import (
     _safe_capture_bytes,
     _sha256,
     _source_row,
-    _svg_header,
+    _svg_header as _base_svg_header,
     _write_artifacts,
     _xml_text,
 )
@@ -64,6 +64,29 @@ class PackCapture:
     rendered_dom: bytes
     attestation: bytes
     document: Mapping[str, Any]
+
+
+def _pack_svg_header(
+    title: str,
+    description: str,
+    *,
+    width: int,
+    height: int,
+    receipt: str,
+    metadata_extra: Mapping[str, Any] | None = None,
+) -> str:
+    """Build an SVG header whose provenance names the pack evidence source."""
+
+    metadata = dict(metadata_extra or {})
+    metadata["source"] = EVIDENCE_PATH.as_posix()
+    return _base_svg_header(
+        title,
+        description,
+        width=width,
+        height=height,
+        receipt=receipt,
+        metadata_extra=metadata,
+    )
 
 
 def _parse_pack_png(content: bytes) -> tuple[int, int]:
@@ -325,7 +348,7 @@ def _layout_svg(document: Mapping[str, Any]) -> bytes:
     width = 1_330
     colors = ("#59e3c2", "#bd7cff", "#55a8ff")
     parts = [
-        _svg_header(
+        _pack_svg_header(
             "Actual Git pack v2 and index v2 byte layout",
             "Byte offsets and section sizes are derived from the real production pack receipt.",
             width=1440,
@@ -407,7 +430,7 @@ def _fanout_svg(document: Mapping[str, Any]) -> bytes:
         row["prefix"]: row for row in report["index"]["nonzero_fanout_buckets"]
     }
     parts = [
-        _svg_header(
+        _pack_svg_header(
             "Actual index v2 fanout lookup",
             "The three populated prefix buckets, sorted object IDs, and exact index ranges come from the verified index receipt.",
             width=1440,
@@ -454,7 +477,7 @@ def _integrity_svg(document: Mapping[str, Any]) -> bytes:
         ("INDEX CHECKSUM", index["index_sha1"]),
     )
     parts = [
-        _svg_header(
+        _pack_svg_header(
             "Independent pack/index integrity chain",
             "The production verifier reconstructs each logical object, checks entry CRCs and offsets, then binds both file checksums.",
             width=1440,
@@ -495,7 +518,7 @@ def _cli_svg(document: Mapping[str, Any], verify_output: bytes) -> bytes:
     before_receipt, receipt_digest = transcript.rsplit(" receipt_sha256=", 1)
     before_pack, pack_digest = before_receipt.rsplit("pack_sha1=", 1)
     parts = [
-        _svg_header(
+        _pack_svg_header(
             "Real Git pack/index CLI receipt",
             "Exact stdout from pack-verify; the command executed real git pack-objects and independently checked both files.",
             width=1440,
