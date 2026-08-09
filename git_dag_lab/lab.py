@@ -54,6 +54,7 @@ _ALLOWED_GIT_COMMANDS = frozenset(
         "hash-object",
         "merge-base",
         "mktree",
+        "pack-objects",
         "rev-list",
         "symbolic-ref",
         "update-ref",

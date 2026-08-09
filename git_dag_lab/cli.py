@@ -9,6 +9,7 @@ import sys
 from typing import TextIO
 
 from .lab import LabError, run_lab
+from .pack import run_pack_lab
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -23,6 +24,20 @@ def build_parser() -> argparse.ArgumentParser:
         "inspect", help="print the complete machine-readable evidence document"
     )
     inspect_parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="emit canonical JSON on one line instead of indented JSON",
+    )
+
+    subparsers.add_parser(
+        "pack-verify",
+        help="build and independently verify a real Git pack v2/index v2 pair",
+    )
+    pack_inspect_parser = subparsers.add_parser(
+        "pack-inspect",
+        help="print the complete machine-readable pack/index evidence document",
+    )
+    pack_inspect_parser.add_argument(
         "--compact",
         action="store_true",
         help="emit canonical JSON on one line instead of indented JSON",
@@ -44,12 +59,15 @@ def main(
     args = build_parser().parse_args(argv)
 
     try:
-        report = run_lab(root if root is not None else Path.cwd())
+        if args.command.startswith("pack-"):
+            report = run_pack_lab(root if root is not None else Path.cwd())
+        else:
+            report = run_lab(root if root is not None else Path.cwd())
     except LabError as exc:
         errors.write(f"ERROR git-dag-lab: {exc}\n")
         return 1
 
-    if args.command == "verify":
+    if args.command in {"verify", "pack-verify"}:
         output.write(report.receipt_line + "\n")
     else:
         output.write(report.to_json(pretty=not args.compact) + "\n")
