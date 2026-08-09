@@ -111,10 +111,14 @@ class PackEvidenceTests(unittest.TestCase):
                 self.assertIn("<desc", text)
                 self.assertIn('role="img"', text)
                 self.assertIn(receipt, text)
-                self.assertIn(
-                    f"&quot;source&quot;:&quot;{evidence.EVIDENCE_PATH.as_posix()}&quot;",
-                    text,
+                metadata = json.loads(
+                    text.split("<metadata>", 1)[1].split("</metadata>", 1)[0]
                 )
+                self.assertEqual(
+                    metadata["source"],
+                    evidence.EVIDENCE_PATH.as_posix(),
+                )
+                self.assertEqual(metadata["report_receipt_sha256"], receipt)
                 self.assertNotIn("/home/", text)
                 self.assertNotIn("github.com/", text)
 
