@@ -55,7 +55,7 @@ The verifier does not trust the pack filename or Git's index. It parses the vari
 
 ![Receipt-derived integrity chain from pack header through index checksum](docs/assets/git-pack-integrity.svg)
 
-This is deliberately a closed subset: pack v2 and index v2, at most 64 objects, 1 MiB files, 256 KiB expanded objects, and non-delta entries only. OFS/REF deltas, other object formats, arbitrary repositories, reachability, and pack optimization are not claimed. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
+This is deliberately a closed subset: pack v2 and index v2, at most 64 objects, 1 MiB files, 256 KiB expanded objects, and non-delta entries only. Delta entries (OFS/REF), other object formats, arbitrary repositories, reachability, and pack optimization are not claimed. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
 
 ## The hard part: verify Git without trusting Git
 
@@ -103,7 +103,7 @@ tools/capture_pack_report.sh
 python3 -W error -m unittest discover -s tests -v
 ```
 
-Current verified baseline: **89 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, 57 isolated Git invocations in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
+Current verified baseline: **89 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
 
 | Artifact | What it proves |
 |---|---|
