@@ -78,8 +78,9 @@ jobs:
           env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_pack_evidence.py --check
           bash -n tools/capture_report.sh
           bash -n tools/capture_pack_report.sh
+          bash -n tools/capture_ofs_report.sh
           test "$(shellcheck --version | awk '$1 == "version:" {print $2}')" = "0.9.0"
-          shellcheck tools/capture_report.sh tools/capture_pack_report.sh
+          shellcheck tools/capture_report.sh tools/capture_pack_report.sh tools/capture_ofs_report.sh
           test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
 
   distribution:

@@ -1,0 +1,111 @@
+name: Stage OFS evidence
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage-ofs-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Build and attest OFS evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the requested immutable revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up exact Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.12"
+
+      - name: Assert staging boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "omar07ibrahim/hello-git"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          [[ "$GITHUB_REF" =~ ^refs/heads/[A-Za-z0-9._/-]+$ ]]
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse --show-toplevel)" = "$GITHUB_WORKSPACE"
+          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.12"
+          test "$(git version)" = "git version 2.54.0"
+          test -z "${OPENAI_API_KEY:-}"
+          test -z "${GH_TOKEN:-}"
+          test -z "${GITHUB_TOKEN:-}"
+          test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
+
+      - name: Generate the pre-capture package twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_ofs_evidence.py --write --allow-missing-screenshot
+          env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_ofs_evidence.py --check --allow-missing-screenshot
+
+      - name: Cache the exact Chromium container
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c'
+          docker pull "$image"
+          test "$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")" = "$image"
+          test "$(docker image inspect --format '{{.Architecture}}' "$image")" = "amd64"
+
+      - name: Capture and verify the isolated browser report
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools/capture_ofs_report.sh
+          env -u PYTHONHOME -u PYTHONPATH python -B tools/generate_ofs_evidence.py --check
+          env -u PYTHONHOME -u PYTHONPATH python -W error -m unittest discover -s tests -v
+
+      - name: Audit the exact output inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$'docs/assets/git-pack-ofs-cli.svg\ndocs/assets/git-pack-ofs-reconstruction.svg\ndocs/assets/git-pack-ofs-report.png\ndocs/assets/git-pack-ofs-workflow.svg\ndocs/demo/git-pack-ofs-delta-v1/capture-attestation.json\ndocs/demo/git-pack-ofs-delta-v1/inspect.json\ndocs/demo/git-pack-ofs-delta-v1/manifest.json\ndocs/demo/git-pack-ofs-delta-v1/rendered-dom.html\ndocs/demo/git-pack-ofs-delta-v1/report.html\ndocs/demo/git-pack-ofs-delta-v1/verify.txt\nevidence/git-pack-ofs-delta-v1.json'
+          observed=$(
+            {
+              find docs/assets -maxdepth 1 -type f -name 'git-pack-ofs-*' -printf 'docs/assets/%f\n'
+              find docs/demo/git-pack-ofs-delta-v1 -maxdepth 1 -type f -printf 'docs/demo/git-pack-ofs-delta-v1/%f\n'
+              find evidence -maxdepth 1 -type f -name 'git-pack-ofs-delta-v1.json' -printf 'evidence/%f\n'
+            } | sort
+          )
+          test "$observed" = "$expected"
+          while IFS= read -r path; do
+            test -f "$path"
+            test ! -L "$path"
+            test "$(stat -c '%h' "$path")" = "1"
+          done <<< "$expected"
+          sha256sum docs/assets/git-pack-ofs-*.svg docs/assets/git-pack-ofs-report.png docs/demo/git-pack-ofs-delta-v1/* evidence/git-pack-ofs-delta-v1.json
+
+      - name: Upload exact staged evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hello-git-ofs-evidence-${{ github.sha }}
+          path: |
+            evidence/git-pack-ofs-delta-v1.json
+            docs/demo/git-pack-ofs-delta-v1/verify.txt
+            docs/demo/git-pack-ofs-delta-v1/inspect.json
+            docs/demo/git-pack-ofs-delta-v1/report.html
+            docs/demo/git-pack-ofs-delta-v1/rendered-dom.html
+            docs/demo/git-pack-ofs-delta-v1/capture-attestation.json
+            docs/demo/git-pack-ofs-delta-v1/manifest.json
+            docs/assets/git-pack-ofs-cli.svg
+            docs/assets/git-pack-ofs-reconstruction.svg
+            docs/assets/git-pack-ofs-workflow.svg
+            docs/assets/git-pack-ofs-report.png
+          if-no-files-found: error
+          include-hidden-files: false
+          compression-level: 0
+          retention-days: 1
