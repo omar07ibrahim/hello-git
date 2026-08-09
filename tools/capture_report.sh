@@ -221,8 +221,8 @@ if [[ $(sha256sum "$repo_root/tools/capture_report.sh" | awk '{print $1}') != "$
     exit 1
 fi
 
-chmod 0644 "$temporary_root/output/git-dag-report.png"
-chmod 0644 "$dom_path"
+chmod 0600 "$temporary_root/output/git-dag-report.png"
+chmod 0600 "$dom_path"
 mv -f -- "$temporary_root/output/git-dag-report.png" "$output_path"
 mv -f -- "$dom_path" "$rendered_dom_path"
 
@@ -312,7 +312,7 @@ try:
         temporary.flush()
         os.fsync(temporary.fileno())
         temporary_path = Path(temporary.name)
-    os.chmod(temporary_path, 0o644)
+    os.chmod(temporary_path, 0o600)
     os.replace(temporary_path, attestation_path)
     temporary_path = None
 finally:

@@ -163,6 +163,14 @@ class EvidencePackageTests(unittest.TestCase):
         self.assertRegex(capture["browser_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual(capture["network"], "none")
         self.assertEqual(capture["viewport"], {"height": 1800, "width": 1440})
+        script = (ROOT / "tools/capture_report.sh").read_text()
+        self.assertIn(
+            'chmod 0600 "$temporary_root/output/git-dag-report.png"',
+            script,
+        )
+        self.assertIn('chmod 0600 "$dom_path"', script)
+        self.assertIn("os.chmod(temporary_path, 0o600)", script)
+        self.assertNotIn("chmod 0644", script)
 
     def test_sources_are_hashed_and_path_relative(self) -> None:
         for source in self.manifest["sources"]:

@@ -230,6 +230,13 @@ class PackEvidenceTests(unittest.TestCase):
         self.assertIn("--network none", script)
         self.assertIn("--pull=never", script)
         self.assertIn("--read-only", script)
+        self.assertIn(
+            'chmod 0600 "$temporary_root/output/git-pack-report.png"',
+            script,
+        )
+        self.assertIn('chmod 0600 "$dom_path"', script)
+        self.assertIn("os.chmod(temporary_path, 0o600)", script)
+        self.assertNotIn("chmod 0644", script)
         self.assertNotRegex(script, re.compile(r"(?m)^\s*curl\b|\bwget\b"))
 
 
