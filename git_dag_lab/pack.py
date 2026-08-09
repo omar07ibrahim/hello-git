@@ -459,6 +459,7 @@ def _build_and_verify_pack(runner: _GitRunner, private: Path) -> PackReport:
         "pack-objects",
         "--window=0",
         "--depth=0",
+        "--compression=0",
         "--no-reuse-delta",
         "--no-reuse-object",
         os.fspath(prefix),

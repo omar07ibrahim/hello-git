@@ -1,0 +1,86 @@
+name: Stage pack evidence (temporary)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage-pack-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONNOUSERSITE: "1"
+  PYTHONHASHSEED: "0"
+  TZ: UTC
+
+jobs:
+  stage:
+    name: Generate read-only pack evidence artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the exact feature revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up exact Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.12"
+
+      - name: Assert the bounded staging context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "omar07ibrahim/hello-git"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+          test "$GITHUB_REF" = "refs/heads/agent/pack-index-inspector"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.12"
+          test -z "${OPENAI_API_KEY:-}"
+          test "$(git status --porcelain=v1 --untracked-files=normal --ignore-submodules=none)" = ""
+
+      - name: Acquire the digest-pinned browser image
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='mcr.microsoft.com/playwright@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c'
+          docker pull "$image"
+          test "$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")" = "$image"
+
+      - name: Generate and independently replay both evidence packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools/capture_pack_report.sh
+          python -B tools/generate_evidence.py --write
+          python -B tools/generate_evidence.py --check
+          python -B tools/generate_pack_evidence.py --check
+          python -W error -m unittest discover -s tests -v
+          bash -n tools/capture_pack_report.sh
+          test "$(shellcheck --version | awk '$1 == "version:" {print $2}')" = "0.9.0"
+          shellcheck tools/capture_pack_report.sh
+
+      - name: Upload generated evidence without repository write access
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: git-pack-index-evidence-${{ github.sha }}
+          path: |
+            docs/assets/git-pack-cli.svg
+            docs/assets/git-pack-fanout.svg
+            docs/assets/git-pack-integrity.svg
+            docs/assets/git-pack-layout.svg
+            docs/assets/git-pack-report.png
+            docs/demo/git-dag-v1/manifest.json
+            docs/demo/git-pack-index-v1/
+            evidence/git-pack-index-v1.json
+          if-no-files-found: error
+          include-hidden-files: false
+          compression-level: 0
+          retention-days: 1
