@@ -1,5 +1,7 @@
 # Git DAG Evidence Lab
 
+[![CI](https://github.com/omar07ibrahim/hello-git/actions/workflows/ci.yml/badge.svg)](https://github.com/omar07ibrahim/hello-git/actions/workflows/ci.yml) [![CodeQL](https://github.com/omar07ibrahim/hello-git/actions/workflows/codeql.yml/badge.svg)](https://github.com/omar07ibrahim/hello-git/actions/workflows/codeql.yml)
+
 > A dependency-free Python systems lab that constructs real Git object storage, then independently verifies loose-object DAGs plus closed-subset pack v2/index v2 bytes.
 
 The experiment demonstrates a subtle but important property: a merge commit and a rebase-shaped replay can resolve to **exactly the same tree** while preserving **different histories**.
