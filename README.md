@@ -59,7 +59,7 @@ The verifier does not trust the pack filename or Git's index. It parses the vari
 
 ![Receipt-derived integrity chain from pack header through index checksum](docs/assets/git-pack-integrity.svg)
 
-This is deliberately a closed subset: pack v2 and index v2, at most 64 objects, 1 MiB files, 256 KiB expanded objects, and non-delta entries only. Delta entries (OFS/REF), other object formats, arbitrary repositories, reachability, and pack optimization are not claimed. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
+The checked-in production pack evidence remains a deliberately closed non-delta baseline: pack v2 and index v2, at most 64 objects, 1 MiB files, and 256 KiB expanded objects. The parser now separately accepts bounded OFS_DELTA test vectors with exact earlier-entry bases, depth 4, 4,096 instructions, and a 4 MiB aggregate expansion budget. REF_DELTA, thin packs, other object formats, arbitrary repositories, reachability, and pack optimization remain explicitly unsupported. SHA-1 and CRC32 model Git storage integrity here; neither is presented as authentication, a signature, or collision-resistant security.
 
 ## The hard part: verify Git without trusting Git
 
@@ -107,7 +107,7 @@ tools/capture_pack_report.sh
 python3 -W error -m unittest discover -s tests -v
 ```
 
-Current verified baseline: **90 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
+Current verified baseline: **96 tests**, **9/9 graph invariants**, **7/7 pack/index checks**, **57 isolated Git invocations** in the DAG evidence run, two independently replayed evidence packages, and two attested offline browser captures.
 
 | Artifact | What it proves |
 |---|---|
@@ -132,7 +132,7 @@ Current verified baseline: **90 tests**, **9/9 graph invariants**, **7/7 pack/in
 The standard-library suite exercises more than happy-path graph construction:
 
 - independent blob, tree, and commit envelope hashes;
-- pack v2 headers, bounded zlib streams, logical OIDs, trailer checksum, and explicit delta rejection;
+- pack v2 headers, bounded zlib streams, logical OIDs, trailer checksum, bounded OFS_DELTA replay, and explicit REF_DELTA rejection;
 - index v2 fanout, sorted OIDs, CRC32 rows, small/large offsets, pack binding, and checksum mutations;
 - exact object/ref inventories, parent ordering, reachability, and ancestry;
 - Git's special `directory/` tree ordering, truncated binary objects, and malformed headers;
