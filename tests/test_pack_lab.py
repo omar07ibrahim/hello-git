@@ -17,7 +17,11 @@ from git_dag_lab.lab import VerificationError, git_object_oid
 from git_dag_lab.pack import (
     INDEX_MAGIC,
     INDEX_VERSION,
+    MAX_DELTA_DEPTH,
+    MAX_DELTA_INSTRUCTIONS,
+    MAX_OBJECT_BYTES,
     MAX_PACK_BYTES,
+    MAX_TOTAL_EXPANDED_BYTES,
     PACK_MAGIC,
     PACK_SCHEMA_VERSION,
     PACK_VERSION,
@@ -67,6 +71,68 @@ def _build_pack(payloads: tuple[bytes, ...]) -> tuple[bytes, list[dict[str, int 
 
 def _resign_index(prefix: bytes) -> bytes:
     return prefix + hashlib.sha1(prefix, usedforsecurity=False).digest()
+
+
+def _delta_size(value: int) -> bytes:
+    output = bytearray()
+    while True:
+        current = value & 0x7F
+        value >>= 7
+        if value:
+            current |= 0x80
+        output.append(current)
+        if not value:
+            return bytes(output)
+
+
+def _ofs_distance(distance: int) -> bytes:
+    output = bytearray((distance & 0x7F,))
+    while distance >> 7:
+        distance = (distance >> 7) - 1
+        output.append(0x80 | (distance & 0x7F))
+    output.reverse()
+    return bytes(output)
+
+
+def _copy_instruction(*, offset: int = 0, size: int) -> bytes:
+    command = 0x80
+    parameters = bytearray()
+    for bit, shift in ((0x01, 0), (0x02, 8), (0x04, 16), (0x08, 24)):
+        value = (offset >> shift) & 0xFF
+        if value:
+            command |= bit
+            parameters.append(value)
+    if size != 0x10000:
+        for bit, shift in ((0x10, 0), (0x20, 8), (0x40, 16)):
+            value = (size >> shift) & 0xFF
+            if value:
+                command |= bit
+                parameters.append(value)
+    return bytes((command,)) + bytes(parameters)
+
+
+def _program(base_size: int, result_size: int, instructions: bytes) -> bytes:
+    return _delta_size(base_size) + _delta_size(result_size) + instructions
+
+
+def _build_ofs_pack(
+    base_payload: bytes,
+    deltas: tuple[tuple[int, bytes], ...],
+) -> tuple[bytes, tuple[int, ...]]:
+    body = bytearray(PACK_MAGIC)
+    body.extend(PACK_VERSION.to_bytes(4, "big"))
+    body.extend((1 + len(deltas)).to_bytes(4, "big"))
+    offsets = [len(body)]
+    body.extend(_entry_header(3, len(base_payload)))
+    body.extend(zlib.compress(base_payload, level=9))
+    for base_index, program in deltas:
+        entry_offset = len(body)
+        distance = entry_offset - offsets[base_index]
+        body.extend(_entry_header(6, len(program)))
+        body.extend(_ofs_distance(distance))
+        body.extend(zlib.compress(program, level=9))
+        offsets.append(entry_offset)
+    return _resign_pack(bytes(body)), tuple(offsets)
 
 
 def _build_index(
@@ -119,6 +185,166 @@ class PackParserTests(unittest.TestCase):
             self.assertEqual(entry.size, len(payload))
             self.assertEqual(entry.payload_sha256, hashlib.sha256(payload).hexdigest())
             self.assertGreater(entry.packed_size, 1)
+
+    def test_decodes_bounded_ofs_delta_copy_and_insert(self) -> None:
+        base = b"bounded base\n"
+        target = base + b"delta\n"
+        program = _program(
+            len(base),
+            len(target),
+            _copy_instruction(size=len(base)) + bytes((6,)) + b"delta\n",
+        )
+        content, offsets = _build_ofs_pack(base, ((0, program),))
+
+        parsed = parse_pack(content)
+
+        self.assertEqual(len(parsed.entries), 2)
+        delta = parsed.entries[1]
+        self.assertEqual(delta.representation, "ofs-delta")
+        self.assertEqual(delta.base_offset, offsets[0])
+        self.assertEqual(delta.base_oid, parsed.entries[0].oid)
+        self.assertEqual(delta.delta_depth, 1)
+        self.assertEqual(delta.object_type, "blob")
+        self.assertEqual(delta.size, len(target))
+        self.assertEqual(delta.stored_size, len(program))
+        self.assertEqual(delta.oid, git_object_oid("blob", target))
+        self.assertEqual(delta.payload_sha256, hashlib.sha256(target).hexdigest())
+
+    def test_decodes_the_default_64k_copy_size(self) -> None:
+        base = b"a" * 0x10000
+        target = base + b"!"
+        program = _program(
+            len(base),
+            len(target),
+            _copy_instruction(size=0x10000) + b"\x01!",
+        )
+        content, _ = _build_ofs_pack(base, ((0, program),))
+
+        parsed = parse_pack(content)
+
+        self.assertEqual(parsed.entries[1].size, len(target))
+        self.assertEqual(parsed.entries[1].oid, git_object_oid("blob", target))
+
+    def test_rejects_ref_delta_even_when_its_base_is_present(self) -> None:
+        base = b"base\n"
+        target = base + b"ref\n"
+        program = _program(
+            len(base),
+            len(target),
+            _copy_instruction(size=len(base)) + b"\x04ref\n",
+        )
+        body = bytearray(PACK_MAGIC)
+        body.extend(PACK_VERSION.to_bytes(4, "big"))
+        body.extend((2).to_bytes(4, "big"))
+        body.extend(_entry_header(3, len(base)))
+        body.extend(zlib.compress(base, level=9))
+        body.extend(_entry_header(7, len(program)))
+        body.extend(bytes.fromhex(git_object_oid("blob", base)))
+        body.extend(zlib.compress(program, level=9))
+
+        with self.assertRaisesRegex(VerificationError, "REF_DELTA"):
+            parse_pack(_resign_pack(bytes(body)))
+
+    def test_rejects_zero_middle_and_underflow_ofs_offsets(self) -> None:
+        base = b"base\n"
+        target = base + b"x"
+        program = _program(
+            len(base),
+            len(target),
+            _copy_instruction(size=len(base)) + b"\x01x",
+        )
+        valid, offsets = _build_ofs_pack(base, ((0, program),))
+        header_size = len(_entry_header(6, len(program)))
+        offset_position = offsets[1] + header_size
+        distances = (
+            b"\x00",
+            _ofs_distance(offsets[1] - (offsets[0] + 1)),
+            _ofs_distance(offsets[1] - 11),
+        )
+        for distance in distances:
+            self.assertEqual(len(distance), 1)
+            changed = bytearray(valid[:-20])
+            changed[offset_position] = distance[0]
+            with self.subTest(distance=distance.hex()), self.assertRaises(
+                VerificationError
+            ):
+                parse_pack(_resign_pack(bytes(changed)))
+
+    def test_rejects_malformed_delta_programs(self) -> None:
+        base = b"base"
+        cases = (
+            _program(len(base) + 1, 0, b""),
+            _program(len(base), MAX_OBJECT_BYTES + 1, b""),
+            _program(len(base), 1, b"\x00"),
+            _program(len(base), 2, b"\x02x"),
+            _program(
+                len(base),
+                1,
+                _copy_instruction(offset=len(base), size=1),
+            ),
+            _program(len(base), 2, b"\x01x"),
+            _program(len(base), 1, b"\x02xy"),
+            b"\x80" * 6,
+        )
+        for program in cases:
+            with self.subTest(program=program.hex()), self.assertRaises(
+                VerificationError
+            ):
+                pack_module._apply_delta(base, program)
+
+    def test_enforces_depth_instruction_and_aggregate_budgets(self) -> None:
+        base = b"a"
+        previous = base
+        deltas: list[tuple[int, bytes]] = []
+        for depth in range(MAX_DELTA_DEPTH + 1):
+            target = previous + b"x"
+            deltas.append(
+                (
+                    depth,
+                    _program(
+                        len(previous),
+                        len(target),
+                        _copy_instruction(size=len(previous)) + b"\x01x",
+                    ),
+                )
+            )
+            previous = target
+        too_deep, _ = _build_ofs_pack(base, tuple(deltas))
+        with self.assertRaisesRegex(VerificationError, "depth"):
+            parse_pack(too_deep)
+
+        two_inserts = _program(len(base), 2, b"\x01x\x01y")
+        with (
+            mock.patch.object(pack_module, "MAX_DELTA_INSTRUCTIONS", 1),
+            self.assertRaisesRegex(VerificationError, "instruction"),
+        ):
+            pack_module._apply_delta(base, two_inserts)
+        self.assertEqual(MAX_DELTA_INSTRUCTIONS, 4_096)
+
+        target = base + b"x"
+        bounded, _ = _build_ofs_pack(
+            base,
+            (
+                (
+                    0,
+                    _program(
+                        len(base),
+                        len(target),
+                        _copy_instruction(size=len(base)) + b"\x01x",
+                    ),
+                ),
+            ),
+        )
+        with (
+            mock.patch.object(
+                pack_module,
+                "MAX_TOTAL_EXPANDED_BYTES",
+                len(base) + len(target) - 1,
+            ),
+            self.assertRaisesRegex(VerificationError, "aggregate"),
+        ):
+            parse_pack(bounded)
+        self.assertEqual(MAX_TOTAL_EXPANDED_BYTES, 4_194_304)
 
     def test_rejects_non_bytes_and_outer_boundary_drift(self) -> None:
         cases = (

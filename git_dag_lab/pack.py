@@ -1,8 +1,8 @@
 """Build and independently verify a bounded, deterministic Git pack/index pair.
 
-The fixture uses real ``git pack-objects`` output but validates the pack v2 and
-index v2 bytes with Python's standard library. Delta entries are disabled for
-this first closed subset and rejected by the parser.
+The baseline fixture uses real ``git pack-objects`` output and validates pack
+v2/index v2 bytes with Python's standard library. The parser additionally
+supports a bounded OFS_DELTA subset; REF_DELTA remains explicitly rejected.
 """
 
 from __future__ import annotations
@@ -41,6 +41,11 @@ INDEX_MAGIC = b"\xfftOc"
 MAX_PACK_BYTES = 1_048_576
 MAX_PACK_OBJECTS = 64
 MAX_OBJECT_BYTES = 262_144
+MAX_DELTA_DEPTH = 4
+MAX_DELTA_INSTRUCTIONS = 4_096
+MAX_DELTA_SIZE_BYTES = 5
+MAX_OFS_OFFSET_BYTES = 8
+MAX_TOTAL_EXPANDED_BYTES = 4_194_304
 
 PACK_BLOBS = (
     ("binary-header", bytes(range(32))),
@@ -51,11 +56,12 @@ PACK_BLOBS = (
     ),
 )
 _TYPE_BY_CODE = {1: "commit", 2: "tree", 3: "blob", 4: "tag"}
+_ENTRY_KIND_BY_CODE = {**_TYPE_BY_CODE, 6: "ofs-delta"}
 
 
 @dataclass(frozen=True, slots=True)
 class PackEntry:
-    """One independently decoded non-delta pack entry."""
+    """One independently decoded full or OFS-delta pack entry."""
 
     crc32: int
     object_type: str
@@ -64,9 +70,14 @@ class PackEntry:
     packed_size: int
     payload_sha256: str
     size: int
+    base_offset: int | None = None
+    base_oid: str | None = None
+    delta_depth: int = 0
+    representation: str = "full"
+    stored_size: int = 0
 
     def as_dict(self) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "crc32": f"{self.crc32:08x}",
             "object_type": self.object_type,
             "offset": self.offset,
@@ -75,6 +86,17 @@ class PackEntry:
             "payload_sha256": self.payload_sha256,
             "size": self.size,
         }
+        if self.representation != "full":
+            payload.update(
+                {
+                    "base_offset": self.base_offset,
+                    "base_oid": self.base_oid,
+                    "delta_depth": self.delta_depth,
+                    "representation": self.representation,
+                    "stored_size": self.stored_size,
+                }
+            )
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +106,16 @@ class ParsedPack:
     entries: tuple[PackEntry, ...]
     trailer_sha1: str
     version: int
+
+
+@dataclass(frozen=True, slots=True)
+class _ResolvedObject:
+    """One bounded canonical object available as a delta base."""
+
+    depth: int
+    object_type: str
+    oid: str
+    payload: bytes
 
 
 @dataclass(frozen=True, slots=True)
@@ -228,9 +260,9 @@ def _decode_entry_header(
     first = content[offset]
     offset += 1
     type_code = (first >> 4) & 0x07
-    if type_code not in _TYPE_BY_CODE:
-        if type_code in {6, 7}:
-            raise VerificationError("delta pack entries are outside the reviewed subset")
+    if type_code == 7:
+        raise VerificationError("REF_DELTA pack entries are outside the reviewed subset")
+    if type_code not in _ENTRY_KIND_BY_CODE:
         raise VerificationError("pack entry type is invalid")
 
     size = first & 0x0F
@@ -244,8 +276,180 @@ def _decode_entry_header(
         size |= (current & 0x7F) << shift
         shift += 7
     if size > MAX_OBJECT_BYTES:
-        raise VerificationError("pack entry expands beyond the reviewed bound")
-    return _TYPE_BY_CODE[type_code], size, offset
+        raise VerificationError("pack entry data exceeds the reviewed bound")
+    return _ENTRY_KIND_BY_CODE[type_code], size, offset
+
+
+def _inflate_entry(
+    content: bytes,
+    offset: int,
+    *,
+    declared_size: int,
+    end: int,
+) -> tuple[bytes, int]:
+    source = content[offset:end]
+    inflater = zlib.decompressobj()
+    try:
+        payload = inflater.decompress(source, declared_size + 1)
+    except zlib.error as exc:
+        raise VerificationError("pack entry zlib stream is invalid") from exc
+    if len(payload) > declared_size:
+        raise VerificationError("pack entry expands beyond its declared size")
+    if not inflater.eof or inflater.unconsumed_tail:
+        raise VerificationError("pack entry zlib stream is incomplete or oversized")
+    consumed = len(source) - len(inflater.unused_data)
+    if consumed < 1:
+        raise VerificationError("pack entry has an empty zlib stream")
+    next_offset = offset + consumed
+    if next_offset > end or len(payload) != declared_size:
+        raise VerificationError("pack entry size does not match its payload")
+    return payload, next_offset
+
+
+def _encode_ofs_distance(distance: int) -> bytes:
+    if distance < 1:
+        raise ValueError("OFS_DELTA distance must be positive")
+    encoded = bytearray((distance & 0x7F,))
+    remaining = distance
+    while remaining >> 7:
+        remaining = (remaining >> 7) - 1
+        encoded.append(0x80 | (remaining & 0x7F))
+    encoded.reverse()
+    return bytes(encoded)
+
+
+def _decode_ofs_base_offset(
+    content: bytes,
+    offset: int,
+    *,
+    end: int,
+    entry_offset: int,
+) -> tuple[int, int]:
+    start = offset
+    if offset >= end:
+        raise VerificationError("OFS_DELTA base offset is truncated")
+    current = content[offset]
+    offset += 1
+    distance = current & 0x7F
+    while current & 0x80:
+        if offset >= end or offset - start >= MAX_OFS_OFFSET_BYTES:
+            raise VerificationError("OFS_DELTA base offset is malformed")
+        current = content[offset]
+        offset += 1
+        distance = ((distance + 1) << 7) | (current & 0x7F)
+        if distance > MAX_PACK_BYTES:
+            raise VerificationError("OFS_DELTA base offset exceeds the pack bound")
+    encoded = content[start:offset]
+    if distance < 1 or encoded != _encode_ofs_distance(distance):
+        raise VerificationError("OFS_DELTA base offset is non-canonical")
+    base_offset = entry_offset - distance
+    if base_offset < 12 or base_offset >= entry_offset:
+        raise VerificationError("OFS_DELTA base offset is out of bounds")
+    return base_offset, offset
+
+
+def _encode_delta_size(value: int) -> bytes:
+    if value < 0:
+        raise ValueError("delta size must be non-negative")
+    encoded = bytearray()
+    remaining = value
+    while True:
+        current = remaining & 0x7F
+        remaining >>= 7
+        if remaining:
+            current |= 0x80
+        encoded.append(current)
+        if not remaining:
+            return bytes(encoded)
+
+
+def _decode_delta_size(
+    program: bytes,
+    offset: int,
+    *,
+    label: str,
+) -> tuple[int, int]:
+    start = offset
+    value = 0
+    shift = 0
+    while True:
+        if offset >= len(program) or offset - start >= MAX_DELTA_SIZE_BYTES:
+            raise VerificationError(f"{label} is truncated or oversized")
+        current = program[offset]
+        offset += 1
+        value |= (current & 0x7F) << shift
+        if value > MAX_OBJECT_BYTES:
+            raise VerificationError(f"{label} exceeds the reviewed bound")
+        if not current & 0x80:
+            break
+        shift += 7
+    if program[start:offset] != _encode_delta_size(value):
+        raise VerificationError(f"{label} is non-canonical")
+    return value, offset
+
+
+def _apply_delta(base: bytes, program: bytes) -> bytes:
+    if type(base) is not bytes or type(program) is not bytes:
+        raise VerificationError("delta inputs must be exact bytes")
+    base_size, offset = _decode_delta_size(
+        program,
+        0,
+        label="delta base size",
+    )
+    result_size, offset = _decode_delta_size(
+        program,
+        offset,
+        label="delta result size",
+    )
+    if base_size != len(base):
+        raise VerificationError("delta base size does not match its object")
+    if result_size > MAX_OBJECT_BYTES:
+        raise VerificationError("delta result exceeds the reviewed bound")
+
+    output = bytearray()
+    instructions = 0
+    while offset < len(program):
+        instructions += 1
+        if instructions > MAX_DELTA_INSTRUCTIONS:
+            raise VerificationError("delta instruction count exceeds the reviewed bound")
+        opcode = program[offset]
+        offset += 1
+        if opcode & 0x80:
+            copy_offset = 0
+            copy_size = 0
+            for bit, shift in ((0x01, 0), (0x02, 8), (0x04, 16), (0x08, 24)):
+                if opcode & bit:
+                    if offset >= len(program):
+                        raise VerificationError("delta copy offset is truncated")
+                    copy_offset |= program[offset] << shift
+                    offset += 1
+            for bit, shift in ((0x10, 0), (0x20, 8), (0x40, 16)):
+                if opcode & bit:
+                    if offset >= len(program):
+                        raise VerificationError("delta copy size is truncated")
+                    copy_size |= program[offset] << shift
+                    offset += 1
+            if copy_size == 0:
+                copy_size = 0x10000
+            if copy_offset > len(base) or copy_size > len(base) - copy_offset:
+                raise VerificationError("delta copy range exceeds its base object")
+            if copy_size > result_size - len(output):
+                raise VerificationError("delta copy exceeds its declared result")
+            output.extend(base[copy_offset : copy_offset + copy_size])
+        elif opcode:
+            literal_size = opcode & 0x7F
+            literal_end = offset + literal_size
+            if literal_end > len(program):
+                raise VerificationError("delta literal is truncated")
+            if literal_size > result_size - len(output):
+                raise VerificationError("delta literal exceeds its declared result")
+            output.extend(program[offset:literal_end])
+            offset = literal_end
+        else:
+            raise VerificationError("delta opcode zero is reserved")
+    if len(output) != result_size:
+        raise VerificationError("delta result size does not match its instructions")
+    return bytes(output)
 
 
 def parse_pack(content: bytes) -> ParsedPack:
@@ -274,37 +478,65 @@ def parse_pack(content: bytes) -> ParsedPack:
     entries: list[PackEntry] = []
     offset = 12
     seen: set[str] = set()
+    resolved_by_offset: dict[int, _ResolvedObject] = {}
+    expanded_bytes = 0
     for _ in range(count):
         entry_start = offset
-        object_type, declared_size, payload_start = _decode_entry_header(
+        entry_kind, declared_size, payload_start = _decode_entry_header(
             content,
             offset,
             end=pack_end,
         )
-        inflater = zlib.decompressobj()
-        try:
-            payload = inflater.decompress(
-                content[payload_start:pack_end],
-                MAX_OBJECT_BYTES + 1,
+        base_offset: int | None = None
+        base_oid: str | None = None
+        depth = 0
+        representation = "full"
+        if entry_kind == "ofs-delta":
+            base_offset, payload_start = _decode_ofs_base_offset(
+                content,
+                payload_start,
+                end=pack_end,
+                entry_offset=entry_start,
             )
-        except zlib.error as exc:
-            raise VerificationError("pack entry zlib stream is invalid") from exc
-        if len(payload) > MAX_OBJECT_BYTES:
-            raise VerificationError("pack entry expands beyond the reviewed bound")
-        if not inflater.eof or inflater.unconsumed_tail:
-            raise VerificationError("pack entry zlib stream is incomplete or oversized")
-        consumed = pack_end - payload_start - len(inflater.unused_data)
-        if consumed < 1:
-            raise VerificationError("pack entry has an empty zlib stream")
-        offset = payload_start + consumed
-        if offset > pack_end or len(payload) != declared_size:
-            raise VerificationError("pack entry size does not match its payload")
+        stored_payload, offset = _inflate_entry(
+            content,
+            payload_start,
+            declared_size=declared_size,
+            end=pack_end,
+        )
 
+        if entry_kind == "ofs-delta":
+            assert base_offset is not None
+            base = resolved_by_offset.get(base_offset)
+            if base is None:
+                raise VerificationError(
+                    "OFS_DELTA base is not an earlier pack-entry boundary"
+                )
+            depth = base.depth + 1
+            if depth > MAX_DELTA_DEPTH:
+                raise VerificationError("OFS_DELTA chain exceeds the reviewed depth")
+            payload = _apply_delta(base.payload, stored_payload)
+            object_type = base.object_type
+            base_oid = base.oid
+            representation = entry_kind
+        else:
+            payload = stored_payload
+            object_type = entry_kind
+
+        expanded_bytes += len(payload)
+        if expanded_bytes > MAX_TOTAL_EXPANDED_BYTES:
+            raise VerificationError("pack expands beyond the aggregate reviewed bound")
         oid = git_object_oid(object_type, payload)
         if oid in seen:
             raise VerificationError("pack contains a duplicate logical object")
         seen.add(oid)
         packed = content[entry_start:offset]
+        resolved_by_offset[entry_start] = _ResolvedObject(
+            depth=depth,
+            object_type=object_type,
+            oid=oid,
+            payload=payload,
+        )
         entries.append(
             PackEntry(
                 crc32=binascii.crc32(packed) & 0xFFFFFFFF,
@@ -314,6 +546,11 @@ def parse_pack(content: bytes) -> ParsedPack:
                 packed_size=len(packed),
                 payload_sha256=hashlib.sha256(payload).hexdigest(),
                 size=len(payload),
+                base_offset=base_offset,
+                base_oid=base_oid,
+                delta_depth=depth,
+                representation=representation,
+                stored_size=declared_size,
             )
         )
     if offset != pack_end:
@@ -323,7 +560,6 @@ def parse_pack(content: bytes) -> ParsedPack:
         trailer_sha1=trailer.hex(),
         version=version,
     )
-
 
 def _expected_fanout(oids: tuple[str, ...]) -> tuple[int, ...]:
     counts = [0] * 256
@@ -597,7 +833,10 @@ def run_pack_lab(root: Path | str = ".") -> PackReport:
 
 __all__ = [
     "INDEX_VERSION",
+    "MAX_DELTA_DEPTH",
+    "MAX_DELTA_INSTRUCTIONS",
     "MAX_OBJECT_BYTES",
+    "MAX_TOTAL_EXPANDED_BYTES",
     "MAX_PACK_BYTES",
     "MAX_PACK_OBJECTS",
     "PACK_SCHEMA_VERSION",
