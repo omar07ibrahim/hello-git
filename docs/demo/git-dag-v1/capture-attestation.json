@@ -43,7 +43,7 @@
     "schema_version": "git-dag-browser-capture-attestation/v1",
     "script": {
       "path": "tools/capture_report.sh",
-      "sha256": "74dcf776035069299067544d3bd7b8a1443724f1bd7b842876ea53831b0d8441",
+      "sha256": "124a296ccf38d36a5220c62ea4730fbba2b21414e26b668ded42d855a691d6d5",
       "size": 10937
     },
     "viewport": {
@@ -55,6 +55,6 @@
   "receipt": {
     "algorithm": "sha256",
     "canonicalization": "UTF-8 JSON; sorted keys; compact separators",
-    "sha256": "7c9b58040ada09b40dc57e21c36767d044ec08e8e6a1c928e7dd5da0941ff238"
+    "sha256": "6e1199b957e5e7cdaf0af582d1547ac5a63137b3a0a3b9eadcb85673e09576b5"
   }
 }

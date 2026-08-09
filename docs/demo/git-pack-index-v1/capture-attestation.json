@@ -43,7 +43,7 @@
     "schema_version": "git-pack-browser-capture-attestation/v1",
     "script": {
       "path": "tools/capture_pack_report.sh",
-      "sha256": "3477eeec4a10026fe95b87803f68657069c77f2b491bd69d3cddd56777924f0b",
+      "sha256": "7cddc4ec1ba66e203195d9a9eb3c454fe39b3790472106bad410cfc9d313ce8f",
       "size": 11083
     },
     "viewport": {
@@ -55,6 +55,6 @@
   "receipt": {
     "algorithm": "sha256",
     "canonicalization": "UTF-8 JSON; sorted keys; compact separators",
-    "sha256": "9709eafc99c848f825d083b795a9ba2802109d76b21289e2a4f72c445519c35b"
+    "sha256": "6495ad5876921dcc8f1c6ad01573507c5107512ca3d1256d3e42f6357ac4f622"
   }
 }

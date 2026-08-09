@@ -33,7 +33,7 @@
     {
       "path": "docs/demo/git-pack-index-v1/capture-attestation.json",
       "role": "pack capture provenance and isolation attestation",
-      "sha256": "18e5fea29af65a0fd15b2959486b282f75425f1dabb1df20a556b57bf3c22757",
+      "sha256": "724b0c25f4298756385182cbb48a5c260c59051e4f06e21e3495b16c47655b3a",
       "size": 2011
     },
     {
@@ -69,7 +69,7 @@
   ],
   "capture": {
     "attestation": "docs/demo/git-pack-index-v1/capture-attestation.json",
-    "attestation_receipt_sha256": "9709eafc99c848f825d083b795a9ba2802109d76b21289e2a4f72c445519c35b",
+    "attestation_receipt_sha256": "6495ad5876921dcc8f1c6ad01573507c5107512ca3d1256d3e42f6357ac4f622",
     "browser_binary": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
     "browser_sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
     "browser_version": "Chromium 140.0.7339.186",
@@ -139,13 +139,18 @@
       "size": 2335
     },
     {
+      "path": "tools/generate_evidence.py",
+      "sha256": "9276b529ec13eaa6ceda1cab1282b6679a689697e5c6930ca17b5e0bc8ba3a92",
+      "size": 49590
+    },
+    {
       "path": "tools/generate_pack_evidence.py",
-      "sha256": "2a85d4e5d3a98cca6e562eae7fad28e5f64d61bd02f973dcffdade274b89514d",
-      "size": 41315
+      "sha256": "234af1ac72189cec9034d3b7f396f6950b01564495208a8891620bb7721ec3a9",
+      "size": 41376
     },
     {
       "path": "tools/capture_pack_report.sh",
-      "sha256": "3477eeec4a10026fe95b87803f68657069c77f2b491bd69d3cddd56777924f0b",
+      "sha256": "7cddc4ec1ba66e203195d9a9eb3c454fe39b3790472106bad410cfc9d313ce8f",
       "size": 11083
     }
   ]

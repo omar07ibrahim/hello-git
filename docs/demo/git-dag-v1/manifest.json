@@ -3,7 +3,7 @@
     {
       "path": "docs/assets/evidence-pipeline.svg",
       "role": "evidence pipeline derived from execution summary",
-      "sha256": "55504a79c5025689c167020db503ddaf64adb1542776254d5dedb2fa11f8b157",
+      "sha256": "c20efa2ff42ce32a205d9c83343abae9b43c94826c5a19042b2d2a188b707fe3",
       "size": 4600
     },
     {
@@ -33,7 +33,7 @@
     {
       "path": "docs/demo/git-dag-v1/capture-attestation.json",
       "role": "capture provenance binding browser, isolation, input, and outputs",
-      "sha256": "ea18a02969796afd0900dc5883ab29490bb517bf0f8d74f7f5f6043cb36a7f08",
+      "sha256": "2df440c8071e0b4ab839527176660ce832acb97b0634915bcf2d795c074a737f",
       "size": 1990
     },
     {
@@ -69,7 +69,7 @@
   ],
   "capture": {
     "attestation": "docs/demo/git-dag-v1/capture-attestation.json",
-    "attestation_receipt_sha256": "7c9b58040ada09b40dc57e21c36767d044ec08e8e6a1c928e7dd5da0941ff238",
+    "attestation_receipt_sha256": "6e1199b957e5e7cdaf0af582d1547ac5a63137b3a0a3b9eadcb85673e09576b5",
     "browser_binary": "/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell",
     "browser_sha256": "003728e0b77eb9d52e4d258594bd55ce22ecd245eb6d3b6858fbd844c901ad7d",
     "browser_version": "Chromium 140.0.7339.186",
@@ -140,12 +140,12 @@
     },
     {
       "path": "tools/generate_evidence.py",
-      "sha256": "442346818e239a4ab9b4fa9804929e61bf266dc7145a543fb40076298d47ce6b",
+      "sha256": "9276b529ec13eaa6ceda1cab1282b6679a689697e5c6930ca17b5e0bc8ba3a92",
       "size": 49590
     },
     {
       "path": "tools/capture_report.sh",
-      "sha256": "74dcf776035069299067544d3bd7b8a1443724f1bd7b842876ea53831b0d8441",
+      "sha256": "124a296ccf38d36a5220c62ea4730fbba2b21414e26b668ded42d855a691d6d5",
       "size": 10937
     }
   ]
