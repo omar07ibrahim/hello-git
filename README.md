@@ -6,7 +6,7 @@ The experiment demonstrates a subtle but important property: a merge commit and 
 
 ![Real offline Git DAG evidence report showing the verified graph, checks, CLI receipt, and object envelope](docs/assets/git-dag-report.png)
 
-<p align="center"><sub>Attested 1440×1800 Chromium capture of the checked-in offline report. Report receipt `2da1ccd8…69c84`; screenshot SHA-256 `e539db11…e17e`. No external assets, JavaScript, network, secrets, or host-repository data.</sub></p>
+<p align="center"><sub>Attested 1440×1800 Chromium capture of the checked-in offline report. Provenance: report receipt `2da1ccd8…69c84`; screenshot SHA-256 `e539db11…e17e`. No external assets, JavaScript, network, secrets, or host-repository data.</sub></p>
 
 ## Quick start
 
