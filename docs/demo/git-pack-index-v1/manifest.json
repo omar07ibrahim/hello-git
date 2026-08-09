@@ -130,8 +130,8 @@
   "sources": [
     {
       "path": "git_dag_lab/pack.py",
-      "sha256": "eedc0456eee72f1770b94d3272a60436382ac057d5d5ad2bab3cf5c91909b687",
-      "size": 29231
+      "sha256": "3279df49efc6d5ae4f9d49e66b2bc851f97c79d1950b49b6bfee8d6507a43044",
+      "size": 29327
     },
     {
       "path": "git_dag_lab/cli.py",

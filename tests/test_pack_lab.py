@@ -186,6 +186,71 @@ class PackParserTests(unittest.TestCase):
             self.assertEqual(entry.payload_sha256, hashlib.sha256(payload).hexdigest())
             self.assertGreater(entry.packed_size, 1)
 
+    def test_ofs_codec_matches_independent_git_vectors(self) -> None:
+        vectors = (
+            (1, "01"),
+            (127, "7f"),
+            (128, "8000"),
+            (129, "8001"),
+            (255, "807f"),
+            (256, "8100"),
+            (16_511, "ff7f"),
+            (16_512, "808000"),
+            (1_048_576, "beff00"),
+        )
+        for distance, expected_hex in vectors:
+            encoded = bytes.fromhex(expected_hex)
+            self.assertEqual(pack_module._encode_ofs_distance(distance), encoded)
+            decoded, consumed = pack_module._decode_ofs_base_offset(
+                encoded,
+                0,
+                end=len(encoded),
+                entry_offset=distance + 12,
+            )
+            self.assertEqual(decoded, 12)
+            self.assertEqual(consumed, len(encoded))
+
+        for malformed in (b"\x00", b"\x80", b"\x80\x80\x80\x00"):
+            with self.subTest(encoded=malformed.hex()), self.assertRaises(
+                VerificationError
+            ):
+                pack_module._decode_ofs_base_offset(
+                    malformed,
+                    0,
+                    end=len(malformed),
+                    entry_offset=128,
+                )
+
+    def test_delta_size_codec_matches_independent_git_vectors(self) -> None:
+        vectors = (
+            (0, "00"),
+            (127, "7f"),
+            (128, "8001"),
+            (16_383, "ff7f"),
+            (16_384, "808001"),
+            (262_144, "808010"),
+        )
+        for value, expected_hex in vectors:
+            encoded = bytes.fromhex(expected_hex)
+            self.assertEqual(pack_module._encode_delta_size(value), encoded)
+            decoded, consumed = pack_module._decode_delta_size(
+                encoded,
+                0,
+                label="fixture size",
+            )
+            self.assertEqual(decoded, value)
+            self.assertEqual(consumed, len(encoded))
+
+        for malformed in (b"\x80", b"\x80\x00", b"\x80\x80\x80\x00"):
+            with self.subTest(encoded=malformed.hex()), self.assertRaises(
+                VerificationError
+            ):
+                pack_module._decode_delta_size(
+                    malformed,
+                    0,
+                    label="fixture size",
+                )
+
     def test_decodes_bounded_ofs_delta_copy_and_insert(self) -> None:
         base = b"bounded base\n"
         target = base + b"delta\n"
@@ -209,6 +274,35 @@ class PackParserTests(unittest.TestCase):
         self.assertEqual(delta.stored_size, len(program))
         self.assertEqual(delta.oid, git_object_oid("blob", target))
         self.assertEqual(delta.payload_sha256, hashlib.sha256(target).hexdigest())
+
+    def test_resolves_two_deltas_that_share_one_base(self) -> None:
+        base = b"shared base\n"
+        first_target = base + b"one\n"
+        second_target = base + b"two\n"
+        first_program = _program(
+            len(base),
+            len(first_target),
+            _copy_instruction(size=len(base)) + b"\x04one\n",
+        )
+        second_program = _program(
+            len(base),
+            len(second_target),
+            _copy_instruction(size=len(base)) + b"\x04two\n",
+        )
+        content, offsets = _build_ofs_pack(
+            base,
+            ((0, first_program), (0, second_program)),
+        )
+
+        parsed = parse_pack(content)
+
+        self.assertEqual(len(parsed.entries), 3)
+        self.assertEqual(parsed.entries[1].base_offset, offsets[0])
+        self.assertEqual(parsed.entries[2].base_offset, offsets[0])
+        self.assertEqual(parsed.entries[1].delta_depth, 1)
+        self.assertEqual(parsed.entries[2].delta_depth, 1)
+        self.assertEqual(parsed.entries[1].oid, git_object_oid("blob", first_target))
+        self.assertEqual(parsed.entries[2].oid, git_object_oid("blob", second_target))
 
     def test_decodes_the_default_64k_copy_size(self) -> None:
         base = b"a" * 0x10000
@@ -284,6 +378,7 @@ class PackParserTests(unittest.TestCase):
             ),
             _program(len(base), 2, b"\x01x"),
             _program(len(base), 1, b"\x02xy"),
+            b"\x00\x00\x00",
             b"\x80" * 6,
         )
         for program in cases:
@@ -344,7 +439,7 @@ class PackParserTests(unittest.TestCase):
             self.assertRaisesRegex(VerificationError, "aggregate"),
         ):
             parse_pack(bounded)
-        self.assertEqual(MAX_TOTAL_EXPANDED_BYTES, 4_194_304)
+        self.assertEqual(MAX_TOTAL_EXPANDED_BYTES, 16_777_216)
 
     def test_rejects_non_bytes_and_outer_boundary_drift(self) -> None:
         cases = (
@@ -375,6 +470,9 @@ class PackParserTests(unittest.TestCase):
         delta = bytearray(self.pack_bytes[:-20])
         delta[12] = (delta[12] & 0x8F) | 0x60
 
+        unsupported_tag = bytearray(self.pack_bytes[:-20])
+        unsupported_tag[12] = (unsupported_tag[12] & 0x8F) | 0x40
+
         wrong_size = bytearray(self.pack_bytes[:-20])
         wrong_size[12] = (wrong_size[12] & 0xF0) | ((len(self.payloads[0]) + 1) & 0x0F)
 
@@ -386,6 +484,7 @@ class PackParserTests(unittest.TestCase):
 
         for content in (
             _resign_pack(bytes(delta)),
+            _resign_pack(bytes(unsupported_tag)),
             _resign_pack(bytes(wrong_size)),
             _resign_pack(bytes(corrupt_zlib)),
             bytes(bad_trailer),

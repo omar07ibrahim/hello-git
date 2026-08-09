@@ -43,9 +43,9 @@ MAX_PACK_OBJECTS = 64
 MAX_OBJECT_BYTES = 262_144
 MAX_DELTA_DEPTH = 4
 MAX_DELTA_INSTRUCTIONS = 4_096
-MAX_DELTA_SIZE_BYTES = 5
-MAX_OFS_OFFSET_BYTES = 8
-MAX_TOTAL_EXPANDED_BYTES = 4_194_304
+MAX_DELTA_SIZE_BYTES = 3
+MAX_OFS_OFFSET_BYTES = 3
+MAX_TOTAL_EXPANDED_BYTES = 16_777_216
 
 PACK_BLOBS = (
     ("binary-header", bytes(range(32))),
@@ -55,7 +55,7 @@ PACK_BLOBS = (
         b"fanout tables map object-id prefixes to sorted index ranges\n",
     ),
 )
-_TYPE_BY_CODE = {1: "commit", 2: "tree", 3: "blob", 4: "tag"}
+_TYPE_BY_CODE = {1: "commit", 2: "tree", 3: "blob"}
 _ENTRY_KIND_BY_CODE = {**_TYPE_BY_CODE, 6: "ofs-delta"}
 
 
@@ -391,6 +391,8 @@ def _decode_delta_size(
 def _apply_delta(base: bytes, program: bytes) -> bytes:
     if type(base) is not bytes or type(program) is not bytes:
         raise VerificationError("delta inputs must be exact bytes")
+    if len(program) < 4:
+        raise VerificationError("delta program is shorter than Git's minimum")
     base_size, offset = _decode_delta_size(
         program,
         0,
@@ -560,6 +562,7 @@ def parse_pack(content: bytes) -> ParsedPack:
         trailer_sha1=trailer.hex(),
         version=version,
     )
+
 
 def _expected_fanout(oids: tuple[str, ...]) -> tuple[int, ...]:
     counts = [0] * 256
