@@ -184,7 +184,7 @@ evidence_path = Path(sys.argv[2])
 dom_path = Path(sys.argv[3])
 output = Path(sys.argv[4])
 sys.path.insert(0, str(repo_root))
-from tools.generate_evidence import _parse_png
+from tools.generate_pack_evidence import _parse_pack_png
 
 document = json.loads(evidence_path.read_text(encoding="utf-8"))
 receipt = document["receipt"]["sha256"]
@@ -207,7 +207,7 @@ expected = output / "git-pack-report.png"
 if entries != [expected] or not expected.is_file() or expected.is_symlink():
     raise SystemExit("capture error: browser output inventory is invalid")
 content = expected.read_bytes()
-if _parse_png(content) != (1440, 1500):
+if _parse_pack_png(content) != (1440, 1500):
     raise SystemExit("capture error: pack screenshot dimensions are invalid")
 PY
 

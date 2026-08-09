@@ -126,7 +126,7 @@ class PackEvidenceTests(unittest.TestCase):
 
     def test_browser_capture_and_attestation_are_current(self) -> None:
         screenshot = (ROOT / evidence.SCREENSHOT_PATH).read_bytes()
-        self.assertEqual(evidence._parse_png(screenshot), evidence.PNG_DIMENSIONS)
+        self.assertEqual(evidence._parse_pack_png(screenshot), evidence.PNG_DIMENSIONS)
         attestation = json.loads((ROOT / evidence.ATTESTATION_PATH).read_text())
         payload = attestation["attestation"]
         canonical = json.dumps(

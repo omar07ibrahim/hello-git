@@ -12,9 +12,11 @@ import json
 import os
 from pathlib import Path
 import re
+import struct
 import subprocess
 import sys
 from typing import Any
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 if os.fspath(ROOT) not in sys.path:
@@ -26,10 +28,10 @@ from tools.generate_evidence import (
     BROWSER_VERSION,
     CONTAINER_IMAGE,
     EvidenceError,
+    MAX_PNG_BYTES,
     _artifact_row,
     _check_artifacts,
     _json_bytes,
-    _parse_png,
     _safe_capture_bytes,
     _sha256,
     _source_row,
@@ -62,6 +64,112 @@ class PackCapture:
     rendered_dom: bytes
     attestation: bytes
     document: Mapping[str, Any]
+
+
+def _parse_pack_png(content: bytes) -> tuple[int, int]:
+    """Validate the complete pack-report PNG before trusting image metadata."""
+
+    if len(content) > MAX_PNG_BYTES:
+        raise EvidenceError("pack browser capture exceeds the PNG size limit")
+    if len(content) < 57 or not content.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise EvidenceError("pack browser capture is not a complete PNG")
+
+    offset = 8
+    chunk_index = 0
+    width = height = 0
+    idat_payloads: list[bytes] = []
+    saw_iend = False
+    while offset < len(content):
+        if len(content) - offset < 12:
+            raise EvidenceError("pack PNG chunk header is truncated")
+        length = struct.unpack(">I", content[offset : offset + 4])[0]
+        chunk_type = content[offset + 4 : offset + 8]
+        chunk_end = offset + 12 + length
+        if chunk_end > len(content):
+            raise EvidenceError("pack PNG chunk payload is truncated")
+        if len(chunk_type) != 4 or not all(
+            65 <= byte <= 90 or 97 <= byte <= 122 for byte in chunk_type
+        ):
+            raise EvidenceError("pack PNG chunk type is malformed")
+        payload = content[offset + 8 : offset + 8 + length]
+        expected_crc = struct.unpack(">I", content[offset + 8 + length : chunk_end])[0]
+        actual_crc = zlib.crc32(chunk_type + payload) & 0xFFFFFFFF
+        if expected_crc != actual_crc:
+            raise EvidenceError("pack PNG chunk CRC does not match")
+
+        if chunk_index == 0:
+            if chunk_type != b"IHDR" or length != 13:
+                raise EvidenceError("pack PNG does not start with one 13-byte IHDR")
+            width, height, bit_depth, color_type, compression, filtering, interlace = (
+                struct.unpack(">IIBBBBB", payload)
+            )
+            if (
+                (width, height) != PNG_DIMENSIONS
+                or bit_depth != 8
+                or color_type != 2
+                or compression != 0
+                or filtering != 0
+                or interlace != 0
+            ):
+                raise EvidenceError(
+                    "pack PNG IHDR differs from the pinned Chromium profile"
+                )
+        elif chunk_type == b"IDAT":
+            idat_payloads.append(payload)
+        elif chunk_type != b"IEND":
+            raise EvidenceError(
+                "pack PNG contains a chunk outside the pinned Chromium profile"
+            )
+
+        offset = chunk_end
+        chunk_index += 1
+        if chunk_type == b"IEND":
+            if length != 0:
+                raise EvidenceError("pack PNG IEND chunk is not empty")
+            saw_iend = True
+            break
+
+    if not idat_payloads or not saw_iend:
+        raise EvidenceError("pack PNG lacks IDAT or terminal IEND")
+    if offset != len(content):
+        raise EvidenceError("pack PNG has trailing bytes after IEND")
+
+    scanline_size = 1 + width * 3
+    expected_decoded_size = height * scanline_size
+    decoder = zlib.decompressobj()
+    decoded = bytearray()
+    try:
+        for index, payload in enumerate(idat_payloads):
+            if decoder.eof:
+                raise EvidenceError(
+                    "pack PNG contains IDAT data after the zlib stream ended"
+                )
+            remaining = expected_decoded_size + 1 - len(decoded)
+            if remaining <= 0:
+                raise EvidenceError("pack PNG scanline stream exceeds the expected size")
+            decoded.extend(decoder.decompress(payload, remaining))
+            if decoder.unconsumed_tail or decoder.unused_data:
+                raise EvidenceError("pack PNG zlib stream has excess compressed data")
+            if decoder.eof and index != len(idat_payloads) - 1:
+                raise EvidenceError(
+                    "pack PNG zlib stream ended before the final IDAT"
+                )
+        remaining = expected_decoded_size + 1 - len(decoded)
+        if remaining <= 0:
+            raise EvidenceError("pack PNG scanline stream exceeds the expected size")
+        decoded.extend(decoder.flush(remaining))
+    except zlib.error as exc:
+        raise EvidenceError("pack PNG IDAT payload is not a valid zlib stream") from exc
+    if (
+        not decoder.eof
+        or decoder.unused_data
+        or decoder.unconsumed_tail
+        or len(decoded) != expected_decoded_size
+    ):
+        raise EvidenceError("pack PNG scanline stream is incomplete or has the wrong size")
+    if any(decoded[row * scanline_size] > 4 for row in range(height)):
+        raise EvidenceError("pack PNG contains an invalid scanline filter byte")
+    return width, height
 
 
 def _run_cli(arguments: Sequence[str]) -> bytes:
@@ -487,7 +595,7 @@ def _load_capture(
     screenshot = _safe_capture_bytes(SCREENSHOT_PATH, "pack screenshot")
     rendered_dom = _safe_capture_bytes(RENDERED_DOM_PATH, "pack rendered DOM")
     attestation = _safe_capture_bytes(ATTESTATION_PATH, "pack capture attestation")
-    if _parse_png(screenshot) != PNG_DIMENSIONS:
+    if _parse_pack_png(screenshot) != PNG_DIMENSIONS:
         raise EvidenceError("pack screenshot dimensions differ from the contract")
     try:
         dom_text = rendered_dom.decode("utf-8")
